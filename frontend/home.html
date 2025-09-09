@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Farmer Medicine Shop</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">🌿 Farmer Medicine Shop</div>
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search for products..." onkeyup="showSuggestions(this.value)">
+      <button onclick="searchProduct()">Search</button>
+      <div id="suggestions" class="suggestions"></div>
+    </div>
+    <div class="nav-links">
+      <a href="home.html" class="active">Home</a>
+      <a href="about.html">About Us</a>
+      <a href="cart.html">Cart 🛒</a>
+      <a href="login.html" id="login-link">Login</a>
+      <a href="#" id="logout-link" style="display:none;">Logout</a>
+    </div>
+  </header>
+
+  <!-- Categories -->
+  <section class="categories">
+    <h2>Shop by Category</h2>
+    <div class="category-grid">
+      <div class="category">Fertilizers</div>
+      <div class="category">Seeds</div>
+      <div class="category">Pesticides</div>
+      <div class="category">Tools</div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section class="products">
+    <h2>Featured Products</h2>
+    <div class="product-grid" id="product-grid">
+      
+      <!-- Fertilizers -->
+      <div class="product-card">
+        <img src="images/organic.png" alt="Organic Fertilizer">
+        <h3>Organic Fertilizer</h3>
+        <p class="desc">Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield.</p>
+        <p class="price">₹250</p>
+        <button onclick="addToCart({id:1, name:'Organic Fertilizer', price:250, image:'images/organic.png', desc:'Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield.'})">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <img src="images/nitrogen.png" alt="Nitrogen Fertilizer">
+        <h3>Nitrogen Fertilizer</h3>
+        <p class="desc">High-quality nitrogen-based fertilizer to enhance leaf growth and greener crops.</p>
+        <p class="price">₹300</p>
+        <button onclick="addToCart({id:2, name:'Nitrogen Fertilizer', price:300, image:'images/nitrogen.png', desc:'High-quality nitrogen-based fertilizer to enhance leaf growth and greener crops.'})">Add to Cart</button>
+      </div>
+
+      <!-- Seeds -->
+      <div class="product-card">
+        <img src="images/hybrid.png" alt="Hybrid Seeds Pack">
+        <h3>Hybrid Seeds Pack</h3>
+        <p class="desc">High-yielding hybrid seeds that ensure better germination and crop resilience.</p>
+        <p class="price">₹150</p>
+        <button onclick="addToCart({id:3, name:'Hybrid Seeds Pack', price:150, image:'images/hybrid.png', desc:'High-yielding hybrid seeds that ensure better germination and crop resilience.'})">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <img src="images/wheat.png" alt="Wheat Seeds">
+        <h3>Wheat Seeds</h3>
+        <p class="desc">Premium quality wheat seeds for higher yield and resistance to pests.</p>
+        <p class="price">₹180</p>
+        <button onclick="addToCart({id:4, name:'Wheat Seeds', price:180, image:'images/wheat.png', desc:'Premium quality wheat seeds for higher yield and resistance to pests.'})">Add to Cart</button>
+      </div>
+
+      <!-- Pesticides -->
+      <div class="product-card">
+        <img src="images/spray.png" alt="Crop Protection Spray">
+        <h3>Crop Protection Spray</h3>
+        <p class="desc">Protects plants from harmful insects and fungal infections. Safe and effective.</p>
+        <p class="price">₹320</p>
+        <button onclick="addToCart({id:5, name:'Crop Protection Spray', price:320, image:'images/spray.png', desc:'Protects plants from harmful insects and fungal infections. Safe and effective.'})">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <img src="images/insecticide.png" alt="Insecticide Liquid">
+        <h3>Insecticide Liquid</h3>
+        <p class="desc">Powerful insecticide that ensures crop protection against pests and insects.</p>
+        <p class="price">₹400</p>
+        <button onclick="addToCart({id:6, name:'Insecticide Liquid', price:400, image:'images/insecticide.png', desc:'Powerful insecticide that ensures crop protection against pests and insects.'})">Add to Cart</button>
+      </div>
+
+      <!-- Tools -->
+      <div class="product-card">
+        <img src="images/phosphorus.png" alt="Phosphorus Fertilizer">
+        <h3>Phosphorus Fertilizer</h3>
+        <p class="desc">Boosts root development and enhances flowering and fruiting in crops.</p>
+        <p class="price">₹600</p>
+        <button onclick="addToCart({id:7, name:'Phosphorus Fertilizer', price:600, image:'images/phosphorus.png', desc:'Boosts root development and enhances flowering and fruiting in crops.'})">Add to Cart</button>
+      </div>
+
+      <div class="product-card">
+        <img src="images/potassium.png" alt="Potassium Fertilizer">
+        <h3>Potassium Fertilizer</h3>
+        <p class="desc">Improves drought resistance and strengthens plant immune system.</p>
+        <p class="price">₹700</p>
+        <button onclick="addToCart({id:8, name:'Potassium Fertilizer', price:700, image:'images/potassium.png', desc:'Improves drought resistance and strengthens plant immune system.'})">Add to Cart</button>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer>
+    <p>© 2025 Farmer Medicine Shop | Designed with ❤️ for Farmers</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
