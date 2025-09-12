@@ -57,30 +57,37 @@ Authentication: JWT & bcrypt
 Version Control: Git + GitHub
 
 📂 Project Structure
-FarmerShop/
+Farmer_Medicine_shop/
 │── frontend/
-│   ├── home.html
+│   ├── index.html
 │   ├── cart.html
 │   ├── checkout.html
 │   ├── order-confirmation.html
 │   ├── login.html
 │   ├── signup.html
 │   ├── about.html
+│   ├── forget.html
 │   ├── style.css
 │   ├── checkout.css
 │   ├── order-confirm.css
-│   └── script.js
+│   ├── script.js
+│   └── images/
 │
 │── backend/
 │   ├── models/
 │   │   ├── User.js
-│   │   └── Order.js
+│   │   ├── Order.js
+│   │   └── Product.js
 │   ├── routes/
 │   │   ├── auth.js
-│   │   └── order.js
+│   │   ├── order.js
+│   │   └── product.js
+│   ├── config/
+│   │   ├── db.js
+│   │   └── environment.js
 │   ├── server.js
-│   └── config/
-│       └── db.js
+│   ├── package.json
+│   └── vercel.json
 │
 │── package.json
 │── README.md
@@ -89,48 +96,67 @@ FarmerShop/
 
 Clone the repository:
 
-git clone https://github.com/your-username/farmer-shop.git
-cd farmer-shop
-
+```bash
+git clone https://github.com/your-username/farmer-medicine-shop.git
+cd farmer-medicine-shop
+```
 
 Install dependencies:
 
-npm install
+```bash
+# Install all dependencies (backend and frontend)
+npm run install-all
 
+# Or install separately:
+npm run install-backend
+npm run install-frontend
+```
 
 Start MongoDB locally or connect to MongoDB Atlas.
 
 🔑 Environment Variables
 
-Create a .env file in the root directory and add:
+Create a `.env` file in the `backend` directory and add:
 
-MONGO_URI=your_mongodb_connection_string
-JWT_SECRET=your_secret_key
+```env
+MONGO_URI=mongodb://127.0.0.1:27017/farmershop
+JWT_SECRET=your_super_secret_jwt_key_here_change_this_in_production
 PORT=5000
+NODE_ENV=development
+FRONTEND_URL=http://localhost:3000
+```
 
 ▶️ Running the Project
 
 Start the backend server:
 
+```bash
+# Development mode with auto-restart
+npm run dev
+
+# Production mode
 npm start
+```
 
-
-Open the frontend files (home.html) in your browser or serve them with Live Server.
+Open the frontend files (`index.html`) in your browser or serve them with Live Server.
 
 📡 API Endpoints
+
+🔹 Health Check
+- GET `/api/health` – Check API status
+
 🔹 Auth Routes
+- POST `/api/auth/register` – Register a new user
+- POST `/api/auth/login` – Login user
+- POST `/api/auth/logout` – Logout user
 
-POST /api/auth/register – Register a new user
-
-POST /api/auth/login – Login user
-
-POST /api/auth/logout – Logout user
+🔹 Product Routes
+- GET `/api/products` – Get all products
+- POST `/api/products/add` – Add a new product (admin)
 
 🔹 Order Routes
-
-POST /api/orders – Place an order
-
-GET /api/orders/:userId – Get orders by user
+- POST `/api/orders` – Place an order
+- GET `/api/orders/:userId` – Get orders by user
 
 📸 Screenshots
 🏠 Home Page

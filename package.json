@@ -1,0 +1,42 @@
+{
+  "name": "farmer-medicine-shop",
+  "version": "1.0.0",
+  "description": "Full-stack e-commerce application for agricultural products (seeds, fertilizers, pesticides, medicines, tools)",
+  "main": "index.js",
+  "scripts": {
+    "install-backend": "cd backend && npm install",
+    "install-frontend": "cd frontend && npm install",
+    "install-all": "npm run install-backend && npm run install-frontend",
+    "start": "cd backend && npm start",
+    "dev": "cd backend && npm run dev",
+    "build": "echo 'Build completed'",
+    "test": "echo 'No tests specified'"
+  },
+  "keywords": [
+    "agriculture",
+    "e-commerce",
+    "farming",
+    "medicine",
+    "shop",
+    "nodejs",
+    "express",
+    "mongodb",
+    "html",
+    "css",
+    "javascript"
+  ],
+  "author": "Farmer Medicine Shop Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-username/farmer-medicine-shop.git"
+  },
+  "bugs": {
+    "url": "https://github.com/your-username/farmer-medicine-shop/issues"
+  },
+  "homepage": "https://github.com/your-username/farmer-medicine-shop#readme",
+  "engines": {
+    "node": ">=14.0.0",
+    "npm": ">=6.0.0"
+  }
+}
