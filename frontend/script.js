@@ -20,7 +20,7 @@ async function loginUser(email, password) {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/auth/login", {
+    const res = await fetch(API_ENDPOINTS.auth.login, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, password }),
@@ -50,7 +50,7 @@ async function signupUser(firstName, lastName, email, password) {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/auth/signup", {
+    const res = await fetch(API_ENDPOINTS.auth.signup, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ firstName, lastName, email, password }),
@@ -89,7 +89,7 @@ async function resetPassword(email, newPassword) {
       return;
     }
 
-    const res = await fetch("http://localhost:5000/auth/reset", {
+    const res = await fetch(API_ENDPOINTS.auth.reset, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ email, newPassword }),
