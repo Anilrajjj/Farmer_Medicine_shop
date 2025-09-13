@@ -1,64 +1,60 @@
 const express = require("express");
 const cors = require("cors");
-const mongoose = require("mongoose");
-
-// Import routes
-const authRoutes = require("../routes/auth");
-const productRoutes = require("../routes/product");
-const orderRoutes = require("../routes/order");
 
 const app = express();
 
 // Middleware
 app.use(cors({
-  origin: process.env.FRONTEND_URL || "*",
+  origin: "*",
   credentials: true
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MongoDB Connection
-const connectDB = async () => {
-  try {
-    await mongoose.connect(process.env.MONGO_URI || "mongodb+srv://username:password@cluster.mongodb.net/farmershop?retryWrites=true&w=majority", {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log("✅ MongoDB Connected");
-  } catch (error) {
-    console.error("❌ MongoDB Error:", error.message);
-  }
-};
-
-// Connect to MongoDB
-connectDB();
-
-// Routes
-app.use("/api/auth", authRoutes);
-app.use("/api/products", productRoutes);
-app.use("/api/orders", orderRoutes);
-
 // Health check endpoint
 app.get("/api/health", (req, res) => {
-  res.json({ 
-    message: "Farmer Medicine Shop API is running!", 
-    status: "healthy",
-    timestamp: new Date().toISOString()
-  });
+  try {
+    res.json({ 
+      message: "Farmer Medicine Shop API is running!", 
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development"
+    });
+  } catch (error) {
+    console.error("Health check error:", error);
+    res.status(500).json({ error: "Health check failed" });
+  }
 });
 
 // Root endpoint
 app.get("/", (req, res) => {
-  res.json({ 
-    message: "Farmer Medicine Shop API", 
-    status: "running",
-    endpoints: {
-      health: "/api/health",
-      auth: "/api/auth",
-      products: "/api/products", 
-      orders: "/api/orders"
-    }
-  });
+  try {
+    res.json({ 
+      message: "Farmer Medicine Shop API", 
+      status: "running",
+      endpoints: {
+        health: "/api/health",
+        test: "/api/test"
+      }
+    });
+  } catch (error) {
+    console.error("Root endpoint error:", error);
+    res.status(500).json({ error: "Root endpoint failed" });
+  }
+});
+
+// Test endpoint
+app.get("/api/test", (req, res) => {
+  try {
+    res.json({
+      message: "Test endpoint working!",
+      timestamp: new Date().toISOString(),
+      environment: process.env.NODE_ENV || "development"
+    });
+  } catch (error) {
+    console.error("Test endpoint error:", error);
+    res.status(500).json({ error: "Test endpoint failed" });
+  }
 });
 
 // 404 handler
@@ -68,8 +64,12 @@ app.use("*", (req, res) => {
 
 // Error handler
 app.use((err, req, res, next) => {
-  console.error(err.stack);
-  res.status(500).json({ message: "Something went wrong!", error: err.message });
+  console.error("Global error handler:", err);
+  res.status(500).json({ 
+    message: "Something went wrong!", 
+    error: err.message,
+    timestamp: new Date().toISOString()
+  });
 });
 
 // Export for Vercel
