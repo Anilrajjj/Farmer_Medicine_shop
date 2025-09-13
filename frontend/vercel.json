@@ -15,6 +15,34 @@
       }
     },
     {
+      "src": "/about.html",
+      "dest": "/about.html"
+    },
+    {
+      "src": "/cart.html", 
+      "dest": "/cart.html"
+    },
+    {
+      "src": "/login.html",
+      "dest": "/login.html"
+    },
+    {
+      "src": "/signup.html",
+      "dest": "/signup.html"
+    },
+    {
+      "src": "/checkout.html",
+      "dest": "/checkout.html"
+    },
+    {
+      "src": "/order-confirmation.html",
+      "dest": "/order-confirmation.html"
+    },
+    {
+      "src": "/forget.html",
+      "dest": "/forget.html"
+    },
+    {
       "src": "/(.*)",
       "dest": "/index.html"
     }

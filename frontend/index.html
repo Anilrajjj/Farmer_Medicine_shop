@@ -17,11 +17,11 @@
       <div id="suggestions" class="suggestions"></div>
     </div>
     <div class="nav-links">
-      <a href="index.html" class="active">Home</a>
-      <a href="about.html">About Us</a>
-      <a href="cart.html">Cart 🛒</a>
-      <a href="login.html" id="login-link">Login</a>
-      <a href="#" id="logout-link" style="display:none;">Logout</a>
+      <a href="javascript:void(0)" onclick="showPage('home')" class="active">Home</a>
+      <a href="javascript:void(0)" onclick="showPage('about')">About Us</a>
+      <a href="javascript:void(0)" onclick="showPage('cart')">Cart 🛒</a>
+      <a href="javascript:void(0)" onclick="showPage('login')" id="login-link">Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
     </div>
   </header>
 
@@ -250,6 +250,26 @@
 
         grid.appendChild(card);
       });
+    }
+
+    // Navigation function
+    function showPage(page) {
+      switch(page) {
+        case 'home':
+          window.location.href = './';
+          break;
+        case 'about':
+          window.location.href = './about.html';
+          break;
+        case 'cart':
+          window.location.href = './cart.html';
+          break;
+        case 'login':
+          window.location.href = './login.html';
+          break;
+        default:
+          console.log('Unknown page:', page);
+      }
     }
 
     // Initialize when page loads
