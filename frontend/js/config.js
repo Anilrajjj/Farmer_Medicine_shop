@@ -6,7 +6,7 @@ const API_CONFIG = {
   },
   // Production (Vercel)
   production: {
-    baseURL: 'https://your-backend-domain.vercel.app/api'
+    baseURL: 'https://farmer-medicine-shop-backend.vercel.app/api'
   }
 };
 
