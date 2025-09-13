@@ -4,9 +4,9 @@ const API_CONFIG = {
   development: {
     baseURL: 'http://localhost:5000/api'
   },
-  // Production (Vercel)
+  // Production (Vercel) - Use environment variable if available
   production: {
-    baseURL: 'https://farmer-medicine-shop-backend.vercel.app/api'
+    baseURL: process.env.VITE_API_URL || process.env.REACT_APP_API_URL || process.env.NEXT_PUBLIC_API_URL || 'https://farmer-medicine-shop-backend.vercel.app/api'
   }
 };
 
