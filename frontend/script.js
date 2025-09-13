@@ -12,6 +12,15 @@ const products = [
 
 // ================== LOGIN / SIGNUP / RESET ==================
 
+// Fallback API endpoints if config.js doesn't load
+const API_ENDPOINTS = window.API_ENDPOINTS || {
+  auth: {
+    login: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/login',
+    signup: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/signup',
+    reset: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/reset'
+  }
+};
+
 // LOGIN
 async function loginUser(email, password) {
   try {
@@ -446,6 +455,9 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // ================== INITIALIZE ==================
+  console.log("Script loaded successfully");
+  console.log("API_ENDPOINTS:", API_ENDPOINTS);
+  
   renderProducts();
   renderCart();
   updateNavbar();
