@@ -11,7 +11,7 @@
   <header class="navbar">
     <div class="logo">🌿 Farmer Medicine Shop</div>
     <div class="nav-links">
-      <a href="/">Home</a>
+      <a href="index.html">Home</a>
       <a href="about.html">About Us</a>
       <a href="cart.html">Cart 🛒</a>
       <a href="login.html" id="login-link">Login</a>
@@ -31,7 +31,58 @@
     <p><a href="forget.html">Forgot Password?</a></p>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="script.js"></script>
+  <script>
+    // Inline API Configuration
+    const API_ENDPOINTS = {
+      auth: {
+        login: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/login',
+        signup: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/signup',
+        reset: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/reset'
+      }
+    };
+
+    // Login function
+    async function loginUser(email, password) {
+      try {
+        if (!email || !password) {
+          alert("⚠️ Please enter both email and password.");
+          return;
+        }
+
+        const res = await fetch(API_ENDPOINTS.auth.login, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        const data = await res.json();
+        if (res.ok) {
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("userEmail", data.email);
+          alert("✅ Login successful!");
+          window.location.href = "index.html";
+        } else {
+          alert("❌ " + (data.message || "Login failed."));
+        }
+      } catch (err) {
+        console.error(err);
+        alert("⚠️ Network error. Please try again.");
+      }
+    }
+
+    // Initialize when page loads
+    document.addEventListener("DOMContentLoaded", function () {
+      // Login form
+      const loginForm = document.getElementById("loginForm");
+      if (loginForm) {
+        loginForm.addEventListener("submit", function (e) {
+          e.preventDefault();
+          const email = document.getElementById("loginEmail").value;
+          const password = document.getElementById("loginPassword").value;
+          loginUser(email, password);
+        });
+      }
+    });
+  </script>
 </body>
 </html>

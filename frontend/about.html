@@ -11,7 +11,7 @@
   <header class="navbar">
     <div class="logo">🌿 Farmer Medicine Shop</div>
     <div class="nav-links">
-      <a href="/">Home</a>
+      <a href="index.html">Home</a>
       <a href="about.html" class="active">About Us</a>
       <a href="cart.html">Cart 🛒</a>
       <a href="login.html" id="login-link">Login</a>
@@ -33,7 +33,43 @@
     <p>© 2025 Farmer Medicine Shop</p>
   </footer>
 
-  <script src="js/config.js"></script>
-  <script src="script.js"></script>
+  <script>
+    // Basic functions for about page
+    function isUserLoggedIn() {
+      return localStorage.getItem("isLoggedIn") === "true";
+    }
+
+    function updateNavbar() {
+      const loginLink = document.getElementById("login-link");
+      const logoutLink = document.getElementById("logout-link");
+
+      if (!loginLink || !logoutLink) return;
+
+      if (isUserLoggedIn()) {
+        loginLink.style.display = "none";
+        logoutLink.style.display = "inline";
+        logoutLink.onclick = logoutUser;
+      } else {
+        loginLink.style.display = "inline";
+        logoutLink.style.display = "none";
+      }
+    }
+
+    function logoutUser() {
+      if (!confirm("Are you sure you want to logout?")) return;
+
+      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("cart");
+      updateNavbar();
+      alert("✅ Logged out successfully.");
+      window.location.href = "login.html";
+    }
+
+    // Initialize when page loads
+    document.addEventListener("DOMContentLoaded", function () {
+      updateNavbar();
+    });
+  </script>
 </body>
 </html>
