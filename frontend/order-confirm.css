@@ -1,40 +1,118 @@
 /* Global */
 body {
-  font-family: "Segoe UI", Arial, sans-serif;
-  background-color: #f4f4f9;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   margin: 0;
   padding: 0;
   color: #333;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Navbar */
+nav {
+  background: #2e7d32;
+  padding: 15px 0;
+  text-align: center;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+nav a {
+  color: white;
+  text-decoration: none;
+  margin: 0 15px;
+  font-weight: 500;
+  transition: color 0.3s;
+}
+
+nav a:hover {
+  color: #c8e6c9;
 }
 
 /* Confirmation container */
 .confirmation-container {
-  max-width: 650px;
-  margin: 50px auto;
+  max-width: 700px;
+  margin: 30px auto;
   background: #fff;
-  padding: 30px;
-  border-radius: 14px;
-  box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
   text-align: center;
   animation: fadeIn 0.6s ease-in-out;
+  flex: 1;
 }
 
 /* Heading */
 .confirmation-container h2 {
   color: #2e7d32;
-  font-size: 26px;
-  margin-bottom: 15px;
+  font-size: 32px;
+  margin-bottom: 20px;
+  font-weight: 700;
 }
 
 /* Paragraphs */
 .confirmation-container p {
-  font-size: 16px;
-  margin: 8px 0;
-  line-height: 1.5;
+  font-size: 18px;
+  margin: 10px 0;
+  line-height: 1.6;
 }
 
 .confirmation-container strong {
   color: #111;
+  font-weight: 600;
+}
+
+/* Order details */
+#order-details {
+  text-align: left;
+  margin: 30px 0;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+#order-details h3 {
+  color: #2e7d32;
+  font-size: 22px;
+  margin-bottom: 15px;
+  border-bottom: 2px solid #2e7d32;
+  padding-bottom: 5px;
+}
+
+#order-details p {
+  margin: 8px 0;
+  font-size: 16px;
+}
+
+#order-details ul {
+  margin: 15px 0;
+  padding-left: 20px;
+}
+
+#order-details li {
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+/* Button */
+.btn {
+  display: inline-block;
+  background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
+  color: white;
+  padding: 15px 30px;
+  text-decoration: none;
+  border-radius: 10px;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(46, 125, 50, 0.3);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(46, 125, 50, 0.4);
 }
 
 /* Ordered items section */

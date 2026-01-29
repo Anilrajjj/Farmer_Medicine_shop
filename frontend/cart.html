@@ -27,19 +27,7 @@
     <h3 id="cart-total"></h3>
 
     <!-- Checkout button (hidden initially) -->
-    <!-- Inside your cart.html -->
-<button id="checkoutBtn" class="checkout-btn">Proceed to Checkout</button>
-
-<script>
-  document.getElementById("checkoutBtn").addEventListener("click", function () {
-    const cart = JSON.parse(localStorage.getItem("cart")) || [];
-    if (cart.length === 0) {
-      alert("Your cart is empty!");
-    } else {
-      window.location.href = "checkout.html"; // redirect
-    }
-  });
-</script>
+    <button id="checkout-btn" class="checkout-btn" style="display:none;">Proceed to Checkout</button>
 
   </section>
 
@@ -47,128 +35,7 @@
     <p>© 2025 Farmer Medicine Shop</p>
   </footer>
 
-  <script>
-    // Cart functions
-    function safeGetCart() {
-      try {
-        return JSON.parse(localStorage.getItem("cart")) || [];
-      } catch {
-        return [];
-      }
-    }
-
-    function getCart() {
-      return safeGetCart();
-    }
-
-    function isUserLoggedIn() {
-      return localStorage.getItem("isLoggedIn") === "true";
-    }
-
-    function updateNavbar() {
-      const loginLink = document.getElementById("login-link");
-      const logoutLink = document.getElementById("logout-link");
-
-      if (!loginLink || !logoutLink) return;
-
-      if (isUserLoggedIn()) {
-        loginLink.style.display = "none";
-        logoutLink.style.display = "inline";
-        logoutLink.onclick = logoutUser;
-      } else {
-        loginLink.style.display = "inline";
-        logoutLink.style.display = "none";
-      }
-    }
-
-    function logoutUser() {
-      if (!confirm("Are you sure you want to logout?")) return;
-
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("cart");
-      updateNavbar();
-      alert("✅ Logged out successfully.");
-      window.location.href = "login.html";
-    }
-
-    // Render cart on cart.html
-    function renderCart() {
-      const cartItemsContainer = document.getElementById("cart-items");
-      const checkoutBtn = document.getElementById("checkout-btn");
-      const cart = getCart();
-
-      if (!cartItemsContainer) return;
-
-      if (cart.length === 0) {
-        cartItemsContainer.innerHTML = "<p>Your cart is empty.</p>";
-        document.getElementById("cart-total").innerText = "";
-        if (checkoutBtn) checkoutBtn.style.display = "none";
-        return;
-      }
-
-      let total = 0;
-      cartItemsContainer.innerHTML = cart
-        .map(
-          (item, index) => `
-          <div class="cart-item">
-            <img src="${item.image}" alt="${item.name}" class="cart-img">
-            <div>
-              <h3>${item.name}</h3>
-              <p>${item.desc}</p>
-              <p>Price: ₹${item.price}</p>
-              <p>Quantity: ${item.quantity}</p>
-              <button onclick="removeFromCart(${index})">❌ Remove</button>
-            </div>
-          </div>
-        `
-        )
-        .join("");
-
-      total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
-      document.getElementById("cart-total").innerText = "Total: ₹" + total;
-
-      if (checkoutBtn) {
-        checkoutBtn.style.display = "inline-block";
-        checkoutBtn.onclick = proceedToCheckout;
-      }
-    }
-
-    // Remove item from cart
-    function removeFromCart(index) {
-      let cart = getCart();
-      if (cart[index]) {
-        if (confirm(`Remove ${cart[index].name} from cart?`)) {
-          cart.splice(index, 1);
-          localStorage.setItem("cart", JSON.stringify(cart));
-          renderCart();
-        }
-      }
-    }
-
-    // Proceed to checkout
-    function proceedToCheckout() {
-      if (!isUserLoggedIn()) {
-        alert("⚠️ Please login before proceeding to checkout.");
-        window.location.href = "login.html";
-        return;
-      }
-
-      const cart = getCart();
-      if (cart.length === 0) {
-        alert("⚠️ Your cart is empty.");
-        return;
-      }
-
-      alert("✅ Proceeding to checkout...");
-      window.location.href = "checkout.html";
-    }
-
-    // Initialize when page loads
-    document.addEventListener("DOMContentLoaded", function () {
-      renderCart();
-      updateNavbar();
-    });
-  </script>
+  <script src="js/config.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

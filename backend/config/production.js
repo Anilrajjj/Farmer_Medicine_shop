@@ -1,4 +1,4 @@
-// Production configuration for Vercel deployment
+// Production configuration
 module.exports = {
   // MongoDB Atlas connection string (replace with your actual Atlas URI)
   MONGO_URI: process.env.MONGO_URI || "mongodb+srv://username:password@cluster.mongodb.net/farmershop?retryWrites=true&w=majority",
@@ -11,16 +11,10 @@ module.exports = {
   NODE_ENV: process.env.NODE_ENV || "production",
   
   // CORS configuration for production
-  FRONTEND_URL: process.env.FRONTEND_URL || "https://your-frontend-domain.vercel.app",
-  
-  // Vercel specific settings
-  VERCEL_URL: process.env.VERCEL_URL,
+  FRONTEND_URL: process.env.FRONTEND_URL || "http://localhost:3000",
   
   // Get the correct API URL for production
   getApiUrl: function() {
-    if (this.VERCEL_URL) {
-      return `https://${this.VERCEL_URL}`;
-    }
     return `http://localhost:${this.PORT}`;
   }
 };

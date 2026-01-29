@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order History - Farmer Medicine Shop</title>
+  <link rel="stylesheet" href="style.css">
+  <style>
+    .orders-container {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+
+    .order-card {
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+      overflow: hidden;
+    }
+
+    .order-header {
+      background: #f5f5f5;
+      padding: 15px;
+      border-bottom: 1px solid #ddd;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .order-id {
+      font-weight: bold;
+      color: #2e7d32;
+    }
+
+    .order-date {
+      color: #666;
+      font-size: 14px;
+    }
+
+    .order-status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      font-weight: bold;
+    }
+
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-processing { background: #cce5ff; color: #004085; }
+    .status-shipped { background: #d1ecf1; color: #0c5460; }
+    .status-delivered { background: #d4edda; color: #155724; }
+    .status-cancelled { background: #f8d7da; color: #721c24; }
+
+    .order-body {
+      padding: 15px;
+    }
+
+    .order-items {
+      margin-bottom: 15px;
+    }
+
+    .order-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    .item-info {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .item-image {
+      width: 50px;
+      height: 50px;
+      object-fit: cover;
+      border-radius: 5px;
+    }
+
+    .item-details h4 {
+      margin: 0;
+      font-size: 16px;
+    }
+
+    .item-details p {
+      margin: 5px 0 0 0;
+      color: #666;
+      font-size: 14px;
+    }
+
+    .order-total {
+      text-align: right;
+      font-size: 18px;
+      font-weight: bold;
+      color: #2e7d32;
+      margin-top: 15px;
+    }
+
+    .order-address {
+      background: #f9f9f9;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 15px;
+    }
+
+    .order-address h4 {
+      margin: 0 0 10px 0;
+      color: #333;
+    }
+
+    .order-actions {
+      text-align: right;
+      padding: 15px;
+      background: #f5f5f5;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      background: #2e7d32;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 10px;
+    }
+
+    .btn:hover {
+      background: #1b5e20;
+    }
+
+    .btn-danger {
+      background: #d32f2f;
+    }
+
+    .btn-danger:hover {
+      background: #b71c1c;
+    }
+
+    .no-orders {
+      text-align: center;
+      padding: 50px;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .loading {
+      text-align: center;
+      padding: 50px;
+    }
+
+    .error {
+      color: #d32f2f;
+      background: #ffebee;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">🌿 Farmer Medicine Shop</div>
+    <div class="nav-links">
+      <a href="./">Home</a>
+      <a href="./about.html">About Us</a>
+      <a href="./cart.html">Cart 🛒</a>
+      <a href="./order-history.html" class="active">Orders</a>
+      <a href="./login.html" id="login-link">Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
+    </div>
+  </header>
+
+  <div class="orders-container">
+    <h1>My Order History</h1>
+
+    <div id="orders-loading" class="loading">
+      Loading your orders...
+    </div>
+
+    <div id="orders-error" class="error" style="display: none;">
+      Error loading orders. Please try again.
+    </div>
+
+    <div id="orders-list">
+      <!-- Orders will be loaded here -->
+    </div>
+
+    <div id="no-orders" class="no-orders" style="display: none;">
+      <h2>No Orders Yet</h2>
+      <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
+      <a href="./" class="btn">Start Shopping</a>
+    </div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="script.js"></script>
+  <script>
+    // Load orders when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+      if (!isUserLoggedIn()) {
+        alert('Please login to view your order history.');
+        window.location.href = 'login.html';
+        return;
+      }
+
+      loadOrderHistory();
+    });
+
+    async function loadOrderHistory() {
+      const loadingDiv = document.getElementById('orders-loading');
+      const errorDiv = document.getElementById('orders-error');
+      const ordersList = document.getElementById('orders-list');
+      const noOrdersDiv = document.getElementById('no-orders');
+
+      loadingDiv.style.display = 'block';
+      errorDiv.style.display = 'none';
+      ordersList.innerHTML = '';
+      noOrdersDiv.style.display = 'none';
+
+      try {
+        const data = await apiRequest('/orders/my-orders');
+        const orders = data || [];
+
+        loadingDiv.style.display = 'none';
+
+        if (orders.length === 0) {
+          noOrdersDiv.style.display = 'block';
+          return;
+        }
+
+        orders.forEach(order => {
+          const orderCard = createOrderCard(order);
+          ordersList.appendChild(orderCard);
+        });
+
+      } catch (error) {
+        console.error('Error loading orders:', error);
+        loadingDiv.style.display = 'none';
+        errorDiv.style.display = 'block';
+        errorDiv.textContent = 'Error loading orders: ' + error.message;
+      }
+    }
+
+    function createOrderCard(order) {
+      const card = document.createElement('div');
+      card.className = 'order-card';
+
+      const orderDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      });
+
+      card.innerHTML = `
+        <div class="order-header">
+          <div>
+            <div class="order-id">Order #${order._id.slice(-8)}</div>
+            <div class="order-date">Placed on ${orderDate}</div>
+          </div>
+          <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span>
+        </div>
+
+        <div class="order-body">
+          <div class="order-items">
+            ${order.items.map(item => `
+              <div class="order-item">
+                <div class="item-info">
+                  <img src="${item.image}" alt="${item.name}" class="item-image">
+                  <div class="item-details">
+                    <h4>${item.name}</h4>
+                    <p>Quantity: ${item.quantity} × ₹${item.price}</p>
+                  </div>
+                </div>
+                <div class="item-total">₹${item.price * item.quantity}</div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="order-total">
+            Total: ₹${order.totalAmount}
+          </div>
+
+          <div class="order-address">
+            <h4>Delivery Address</h4>
+            <p>
+              ${order.shippingAddress.fullName}<br>
+              ${order.shippingAddress.area}<br>
+              ${order.shippingAddress.landmark ? order.shippingAddress.landmark + '<br>' : ''}
+              ${order.shippingAddress.pincode}<br>
+              Phone: ${order.shippingAddress.phone}
+            </p>
+          </div>
+        </div>
+
+        <div class="order-actions">
+          ${order.status === 'Pending' ?
+            `<button class="btn btn-danger" onclick="cancelOrder('${order._id}')">Cancel Order</button>` :
+            order.status === 'Cancelled' ?
+            `<button class="btn btn-danger" onclick="deleteOrder('${order._id}')">Delete Order</button>` :
+            ''
+          }
+          <button class="btn" onclick="viewOrderDetails('${order._id}')">View Details</button>
+        </div>
+      `;
+
+      return card;
+    }
+
+    async function cancelOrder(orderId) {
+      if (!confirm('Are you sure you want to cancel this order?')) {
+        return;
+      }
+
+      try {
+        await apiRequest(`/orders/${orderId}/cancel`, {
+          method: 'PATCH'
+        });
+
+        alert('Order cancelled successfully!');
+        loadOrderHistory();
+
+      } catch (error) {
+        console.error('Error cancelling order:', error);
+        alert('Error cancelling order: ' + error.message);
+      }
+    }
+
+    async function deleteOrder(orderId) {
+      if (!confirm('Are you sure you want to permanently delete this cancelled order? This action cannot be undone.')) {
+        return;
+      }
+
+      try {
+        await apiRequest(`/orders/${orderId}`, {
+          method: 'DELETE'
+        });
+
+        alert('Order deleted successfully!');
+        loadOrderHistory();
+
+      } catch (error) {
+        console.error('Error deleting order:', error);
+        alert('Error deleting order: ' + error.message);
+      }
+    }
+
+    function viewOrderDetails(orderId) {
+      // For now, just show a simple alert with order info
+      // This could be enhanced with a modal
+      apiRequest(`/orders/${orderId}`)
+        .then(order => {
+          const details = `
+Order ID: ${order._id}
+Status: ${order.status}
+Total: ₹${order.totalAmount}
+Payment: ${order.paymentMethod}
+
+Items:
+${order.items.map(item => `- ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}`).join('\n')}
+
+Shipping Address:
+${order.shippingAddress.fullName}
+${order.shippingAddress.area}
+${order.shippingAddress.landmark || ''}
+${order.shippingAddress.pincode}
+Phone: ${order.shippingAddress.phone}
+          `;
+          alert(details);
+        })
+        .catch(error => {
+          console.error('Error loading order details:', error);
+          alert('Error loading order details');
+        });
+    }
+  </script>
+</body>
+</html>

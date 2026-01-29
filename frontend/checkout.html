@@ -8,24 +8,39 @@
 </head>
 <body>
   <div class="checkout-container">
-    <h2>Checkout</h2>
+    <h2>Secure Checkout</h2>
     <form id="checkoutForm">
-      <label for="fullName">Full Name:</label>
-      <input type="text" id="fullName" name="fullName" required>
+      <div class="form-section">
+        <h3>Personal Information</h3>
+        <label for="fullName">Full Name:</label>
+        <input type="text" id="fullName" name="fullName" required placeholder="Enter your full name">
 
-      <label for="address">Address:</label>
-      <textarea id="address" name="address" required></textarea>
+        <label for="phone">Phone Number:</label>
+        <input type="tel" id="phone" name="phone" required placeholder="Enter your phone number">
+      </div>
 
-      <label for="phone">Phone:</label>
-      <input type="tel" id="phone" name="phone" required>
+      <div class="form-section">
+        <h3>Delivery Address</h3>
+        <label for="area">Area:</label>
+        <input type="text" id="area" name="area" required placeholder="Enter your area">
 
-      <label for="payment">Payment Method:</label>
-      <select id="payment" name="payment" required>
-        <option value="Cash on Delivery">Cash on Delivery</option>
-        <option value="Credit/Debit Card">Credit/Debit Card</option>
-        <option value="UPI">UPI</option>
-        <option value="Net Banking">Net Banking</option>
-      </select>
+        <label for="landmark">Landmark:</label>
+        <input type="text" id="landmark" name="landmark" placeholder="Enter nearby landmark (optional)">
+
+        <label for="pincode">Pincode:</label>
+        <input type="text" id="pincode" name="pincode" required placeholder="Enter pincode" pattern="[0-9]{6}" maxlength="6">
+      </div>
+
+      <div class="form-section">
+        <h3>Payment Method</h3>
+        <label for="payment">Payment Method:</label>
+        <select id="payment" name="payment" required>
+          <option value="Cash on Delivery">Cash on Delivery</option>
+          <option value="Credit/Debit Card">Credit/Debit Card</option>
+          <option value="UPI">UPI</option>
+          <option value="Net Banking">Net Banking</option>
+        </select>
+      </div>
 
       <div class="order-summary">
         <h3>Order Summary</h3>

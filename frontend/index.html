@@ -11,16 +11,13 @@
   <!-- Navbar -->
   <header class="navbar">
     <div class="logo">🌿 Farmer Medicine Shop</div>
-    <div class="search-bar">
-      <input type="text" id="search-input" placeholder="Search for products..." onkeyup="showSuggestions(this.value)">
-      <button onclick="searchProduct()">Search</button>
-      <div id="suggestions" class="suggestions"></div>
-    </div>
     <div class="nav-links">
-      <a href="javascript:void(0)" onclick="showPage('home')" class="active">Home</a>
-      <a href="javascript:void(0)" onclick="showPage('about')">About Us</a>
-      <a href="javascript:void(0)" onclick="showPage('cart')">Cart 🛒</a>
-      <a href="javascript:void(0)" onclick="showPage('login')" id="login-link">Login</a>
+      <a href="./" class="active">Home</a>
+      <a href="./about.html">About Us</a>
+      <a href="./cart.html">Cart 🛒</a>
+      <a href="./order-history.html" id="orders-link" style="display:none;">My Orders</a>
+      <a href="./admin.html" id="admin-link" style="display:none;">Admin</a>
+      <a href="./login.html" id="login-link">Login</a>
       <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
     </div>
   </header>
@@ -29,87 +26,18 @@
   <section class="categories">
     <h2>Shop by Category</h2>
     <div class="category-grid">
-      <div class="category">Fertilizers</div>
-      <div class="category">Seeds</div>
-      <div class="category">Pesticides</div>
-      <div class="category">Tools</div>
+      <button class="category-btn active" data-category="all">All</button>
+      <button class="category-btn" data-category="Fertilizers">Fertilizers</button>
+      <button class="category-btn" data-category="Seeds">Seeds</button>
+      <button class="category-btn" data-category="Pesticides">Pesticides</button>
+      <button class="category-btn" data-category="Tools">Tools</button>
     </div>
   </section>
 
   <!-- Products -->
   <section class="products">
     <h2>Featured Products</h2>
-    <div class="product-grid" id="product-grid">
-      
-      <!-- Fertilizers -->
-      <div class="product-card">
-        <img src="images/organic.png" alt="Organic Fertilizer">
-        <h3>Organic Fertilizer</h3>
-        <p class="desc">Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield.</p>
-        <p class="price">₹250</p>
-        <button onclick="addToCart({id:1, name:'Organic Fertilizer', price:250, image:'images/organic.png', desc:'Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield.'})">Add to Cart</button>
-      </div>
-
-      <div class="product-card">
-        <img src="images/nitrogen.png" alt="Nitrogen Fertilizer">
-        <h3>Nitrogen Fertilizer</h3>
-        <p class="desc">High-quality nitrogen-based fertilizer to enhance leaf growth and greener crops.</p>
-        <p class="price">₹300</p>
-        <button onclick="addToCart({id:2, name:'Nitrogen Fertilizer', price:300, image:'images/nitrogen.png', desc:'High-quality nitrogen-based fertilizer to enhance leaf growth and greener crops.'})">Add to Cart</button>
-      </div>
-
-      <!-- Seeds -->
-      <div class="product-card">
-        <img src="images/hybrid.png" alt="Hybrid Seeds Pack">
-        <h3>Hybrid Seeds Pack</h3>
-        <p class="desc">High-yielding hybrid seeds that ensure better germination and crop resilience.</p>
-        <p class="price">₹150</p>
-        <button onclick="addToCart({id:3, name:'Hybrid Seeds Pack', price:150, image:'images/hybrid.png', desc:'High-yielding hybrid seeds that ensure better germination and crop resilience.'})">Add to Cart</button>
-      </div>
-
-      <div class="product-card">
-        <img src="images/wheat.png" alt="Wheat Seeds">
-        <h3>Wheat Seeds</h3>
-        <p class="desc">Premium quality wheat seeds for higher yield and resistance to pests.</p>
-        <p class="price">₹180</p>
-        <button onclick="addToCart({id:4, name:'Wheat Seeds', price:180, image:'images/wheat.png', desc:'Premium quality wheat seeds for higher yield and resistance to pests.'})">Add to Cart</button>
-      </div>
-
-      <!-- Pesticides -->
-      <div class="product-card">
-        <img src="images/spray.png" alt="Crop Protection Spray">
-        <h3>Crop Protection Spray</h3>
-        <p class="desc">Protects plants from harmful insects and fungal infections. Safe and effective.</p>
-        <p class="price">₹320</p>
-        <button onclick="addToCart({id:5, name:'Crop Protection Spray', price:320, image:'images/spray.png', desc:'Protects plants from harmful insects and fungal infections. Safe and effective.'})">Add to Cart</button>
-      </div>
-
-      <div class="product-card">
-        <img src="images/insecticide.png" alt="Insecticide Liquid">
-        <h3>Insecticide Liquid</h3>
-        <p class="desc">Powerful insecticide that ensures crop protection against pests and insects.</p>
-        <p class="price">₹400</p>
-        <button onclick="addToCart({id:6, name:'Insecticide Liquid', price:400, image:'images/insecticide.png', desc:'Powerful insecticide that ensures crop protection against pests and insects.'})">Add to Cart</button>
-      </div>
-
-      <!-- Tools -->
-      <div class="product-card">
-        <img src="images/phosphorus.png" alt="Phosphorus Fertilizer">
-        <h3>Phosphorus Fertilizer</h3>
-        <p class="desc">Boosts root development and enhances flowering and fruiting in crops.</p>
-        <p class="price">₹600</p>
-        <button onclick="addToCart({id:7, name:'Phosphorus Fertilizer', price:600, image:'images/phosphorus.png', desc:'Boosts root development and enhances flowering and fruiting in crops.'})">Add to Cart</button>
-      </div>
-
-      <div class="product-card">
-        <img src="images/potassium.png" alt="Potassium Fertilizer">
-        <h3>Potassium Fertilizer</h3>
-        <p class="desc">Improves drought resistance and strengthens plant immune system.</p>
-        <p class="price">₹700</p>
-        <button onclick="addToCart({id:8, name:'Potassium Fertilizer', price:700, image:'images/potassium.png', desc:'Improves drought resistance and strengthens plant immune system.'})">Add to Cart</button>
-      </div>
-
-    </div>
+    <div class="product-grid" id="product-grid"></div>
   </section>
 
   <!-- Footer -->
@@ -117,169 +45,33 @@
     <p>© 2025 Farmer Medicine Shop | Designed with ❤️ for Farmers</p>
   </footer>
 
-  <script>
-    // Inline API Configuration
-    const API_ENDPOINTS = {
-      auth: {
-        login: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/login',
-        signup: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/signup',
-        reset: 'https://farmer-medicine-shop-backend.vercel.app/api/auth/reset'
-      },
-      products: {
-        getAll: 'https://farmer-medicine-shop-backend.vercel.app/api/products'
-      },
-      orders: {
-        place: 'https://farmer-medicine-shop-backend.vercel.app/api/orders/place',
-        getMyOrders: (email) => `https://farmer-medicine-shop-backend.vercel.app/api/orders/my-orders/${email}`
-      }
+  <script src="js/config.js"></script>
+  <script src="script.js"></script>
+  
+  <!-- Firebase SDK -->
+  <script type="module">
+    // Import the functions you need from the SDKs you need
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
+    import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+      apiKey: "AIzaSyC0LREI7dAK9PhcBf2B5enKpbhWvK69Ylk",
+      authDomain: "farmer-medicine-shop.firebaseapp.com",
+      projectId: "farmer-medicine-shop",
+      storageBucket: "farmer-medicine-shop.firebasestorage.app",
+      messagingSenderId: "807462595239",
+      appId: "1:807462595239:web:465220fbee898deccc8982",
+      measurementId: "G-P3CWE983VD"
     };
 
-    // Product data
-    const products = [
-      { id: 1, name: "Organic Fertilizer", price: 250, image: "images/organic.png", desc: "Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield." },
-      { id: 2, name: "Nitrogen Fertilizer", price: 300, image: "images/nitrogen.png", desc: "High-quality nitrogen-based fertilizer to enhance leaf growth and greener crops." },
-      { id: 3, name: "Hybrid Seeds Pack", price: 150, image: "images/hybrid.png", desc: "High-yielding hybrid seeds that ensure better germination and crop resilience." },
-      { id: 4, name: "Wheat Seeds", price: 180, image: "images/wheat.png", desc: "Premium quality wheat seeds for higher yield and resistance to pests." },
-      { id: 5, name: "Crop Protection Spray", price: 320, image: "images/spray.png", desc: "Protects plants from harmful insects and fungal infections. Safe and effective." },
-      { id: 6, name: "Insecticide Liquid", price: 400, image: "images/insecticide.png", desc: "Powerful insecticide that ensures crop protection against pests and insects." },
-      { id: 7, name: "Phosphorus Fertilizer", price: 600, image: "images/phosphorus.png", desc: "Boosts root development and enhances flowering and fruiting in crops." },
-      { id: 8, name: "Potassium Fertilizer", price: 700, image: "images/potassium.png", desc: "Improves drought resistance and strengthens plant immune system." }
-    ];
-
-    // Basic functions
-    function addToCart(productId) {
-      if (!isUserLoggedIn()) {
-        alert("⚠️ Please login before adding products to the cart.");
-        window.location.href = "login.html";
-        return;
-      }
-
-      let cart = safeGetCart();
-      const product = products.find(p => p.id === productId);
-
-      const existing = cart.find(item => item.id === product.id);
-      if (existing) {
-        existing.quantity += 1;
-        alert(`🛒 Increased quantity of ${product.name}.`);
-      } else {
-        cart.push({ ...product, quantity: 1 });
-        alert(`🛒 ${product.name} added to your cart.`);
-      }
-
-      localStorage.setItem("cart", JSON.stringify(cart));
-      window.location.href = "cart.html";
-    }
-
-    function safeGetCart() {
-      try {
-        return JSON.parse(localStorage.getItem("cart")) || [];
-      } catch {
-        return [];
-      }
-    }
-
-    function isUserLoggedIn() {
-      return localStorage.getItem("isLoggedIn") === "true";
-    }
-
-    function updateNavbar() {
-      const loginLink = document.getElementById("login-link");
-      const logoutLink = document.getElementById("logout-link");
-
-      if (!loginLink || !logoutLink) return;
-
-      if (isUserLoggedIn()) {
-        loginLink.style.display = "none";
-        logoutLink.style.display = "inline";
-        logoutLink.onclick = logoutUser;
-      } else {
-        loginLink.style.display = "inline";
-        logoutLink.style.display = "none";
-      }
-    }
-
-    function logoutUser() {
-      if (!confirm("Are you sure you want to logout?")) return;
-
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("cart");
-      updateNavbar();
-      alert("✅ Logged out successfully.");
-      window.location.href = "login.html";
-    }
-
-    function searchProduct() {
-      const searchInput = document.getElementById("search-input");
-      const query = searchInput.value.toLowerCase().trim();
-      
-      if (!query) {
-        renderProducts();
-        return;
-      }
-
-      const results = products.filter(p =>
-        p.name.toLowerCase().includes(query) ||
-        p.desc.toLowerCase().includes(query)
-      );
-      renderProducts(results);
-    }
-
-    function renderProducts(productList = products) {
-      const grid = document.getElementById("product-grid");
-      if (!grid) return;
-
-      grid.innerHTML = "";
-
-      if (productList.length === 0) {
-        grid.innerHTML = "<p>No products found.</p>";
-        return;
-      }
-
-      productList.forEach(p => {
-        const card = document.createElement("div");
-        card.classList.add("product-card");
-
-        card.innerHTML = `
-          <img src="${p.image}" alt="${p.name}">
-          <h3>${p.name}</h3>
-          <p class="desc">${p.desc}</p>
-          <p class="price">₹${p.price}</p>
-          <button onclick="addToCart(${p.id})">Add to Cart</button>
-        `;
-
-        grid.appendChild(card);
-      });
-    }
-
-    // Navigation function
-    function showPage(page) {
-      switch(page) {
-        case 'home':
-          window.location.href = './';
-          break;
-        case 'about':
-          window.location.href = './about.html';
-          break;
-        case 'cart':
-          window.location.href = './cart.html';
-          break;
-        case 'login':
-          window.location.href = './login.html';
-          break;
-        default:
-          console.log('Unknown page:', page);
-      }
-    }
-
-    // Initialize when page loads
-    document.addEventListener("DOMContentLoaded", function () {
-      console.log("Script loaded successfully");
-      console.log("API_ENDPOINTS:", API_ENDPOINTS);
-      
-      renderProducts();
-      updateNavbar();
-    });
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const analytics = getAnalytics(app);
+    
+    // Make auth available globally
+    window.firebaseAuth = getAuth(app);
   </script>
 </body>
 </html>

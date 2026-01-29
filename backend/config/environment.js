@@ -3,7 +3,7 @@
 
 module.exports = {
   // Database Configuration
-  MONGO_URI: process.env.MONGO_URI || "mongodb://127.0.0.1:27017/farmershop",
+  MONGO_URI: process.env.MONGO_URI || "mongodb://127.0.0.1:27017/Farmer_shop",
   
   // JWT Configuration
   JWT_SECRET: process.env.JWT_SECRET || "your_super_secret_jwt_key_here_change_this_in_production",

@@ -37,27 +37,6 @@ button {
   font-weight: bold;
 }
 
-.search-bar input {
-  padding: 8px;
-  border: none;
-  border-radius: 5px;
-  width: 200px;
-}
-
-.search-bar button {
-  padding: 8px 12px;
-  margin-left: 5px;
-  border: none;
-  background: #fff;
-  color: #2e7d32;
-  border-radius: 5px;
-  font-weight: bold;
-}
-
-.search-bar button:hover {
-  background: #c8e6c9;
-}
-
 .nav-links a {
   margin-left: 20px;
   color: white;
@@ -85,15 +64,18 @@ button {
   margin-top: 20px;
 }
 
-.category {
+.category-btn {
   background: #a5d6a7;
   padding: 30px;
   border-radius: 10px;
   font-weight: bold;
+  border: none;
+  cursor: pointer;
   transition: transform 0.3s, background 0.3s;
 }
 
-.category:hover {
+.category-btn:hover,
+.category-btn.active {
   background: #81c784;
   transform: scale(1.05);
 }
@@ -210,6 +192,58 @@ button {
   background: #1b5e20;
 }
 
+/* Login Tabs */
+.login-tabs {
+  display: flex;
+  margin-bottom: 20px;
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid #ccc;
+}
+
+.tab-btn {
+  flex: 1;
+  padding: 10px;
+  background: #f5f5f5;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  transition: 0.3s ease;
+}
+
+.tab-btn.active {
+  background: #2e7d32;
+  color: white;
+}
+
+.tab-btn:hover:not(.active) {
+  background: #e0e0e0;
+}
+
+/* Login Forms */
+.login-form {
+  display: none;
+}
+
+.login-form.active {
+  display: block;
+}
+
+#phoneStep2 input {
+  text-align: center;
+  font-size: 18px;
+  letter-spacing: 2px;
+}
+
+#backToPhoneBtn {
+  background: #666;
+  margin-top: 10px;
+}
+
+#backToPhoneBtn:hover {
+  background: #444;
+}
+
 /* ================= FOOTER ================= */
 footer {
   background: #2e7d32;
@@ -311,6 +345,61 @@ footer {
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
+}
+
+/* Quantity Controls */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 10px 0;
+}
+
+.qty-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.3s;
+}
+
+.qty-btn:hover {
+  background: #0056b3;
+}
+
+.qty-btn:active {
+  transform: scale(0.95);
+}
+
+.quantity {
+  font-size: 16px;
+  font-weight: bold;
+  min-width: 30px;
+  text-align: center;
+}
+
+.remove-btn {
+  background: #dc3545;
+  color: white;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.remove-btn:hover {
+  background: #c82333;
 }
 
 .checkout-btn {
