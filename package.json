@@ -10,9 +10,7 @@
     "start": "cd backend && npm start",
     "dev": "cd backend && npm run dev",
     "build": "echo 'Build completed'",
-    "test": "npm run test-setup",
-    "setup": "bash setup.sh || setup.bat",
-    "test-setup": "bash test-setup.sh || test-setup.bat"
+    "setup": "bash setup.sh || setup.bat"
   },
   "keywords": [
     "agriculture",

@@ -1,77 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Farmer Medicine Shop</title>
+  <meta name="description"
+    content="Farmer Medicine Shop — Premium quality seeds, fertilizers, pesticides and tools for farmers. Shop online with fast delivery.">
+  <title>Farmer Medicine Shop | Quality Agricultural Products</title>
   <link rel="stylesheet" href="style.css">
 </head>
+
 <body>
 
-  <!-- Navbar -->
+  <!-- ═══ NAVBAR ═══ -->
   <header class="navbar">
-    <div class="logo">🌿 Farmer Medicine Shop</div>
-    <div class="nav-links">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <span class="logo-text">Farmer Medicine Shop</span>
+    </div>
+
+    <div class="search-bar">
+      <input type="text" id="search-input" placeholder="Search seeds, fertilizers, tools…" autocomplete="off" />
+      <button class="clear-btn" id="clear-search-btn" title="Clear" style="display:none;">✕</button>
+      <button title="Search">🔍</button>
+    </div>
+
+    <nav class="nav-links">
       <a href="./" class="active">Home</a>
-      <a href="./about.html">About Us</a>
-      <a href="./cart.html">Cart 🛒</a>
+      <a href="./about.html">About</a>
+      <a href="./cart.html" class="nav-cart">🛒 Cart</a>
       <a href="./order-history.html" id="orders-link" style="display:none;">My Orders</a>
       <a href="./admin.html" id="admin-link" style="display:none;">Admin</a>
-      <a href="./login.html" id="login-link">Login</a>
+      <a href="./login.html" id="login-link" class="nav-login">Login</a>
       <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
-    </div>
+    </nav>
+
+    <!-- Hamburger -->
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </header>
 
-  <!-- Categories -->
-  <section class="categories">
-    <h2>Shop by Category</h2>
-    <div class="category-grid">
-      <button class="category-btn active" data-category="all">All</button>
-      <button class="category-btn" data-category="Fertilizers">Fertilizers</button>
-      <button class="category-btn" data-category="Seeds">Seeds</button>
-      <button class="category-btn" data-category="Pesticides">Pesticides</button>
-      <button class="category-btn" data-category="Tools">Tools</button>
+  <!-- ═══ MOBILE NAV DRAWER ═══ -->
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-backdrop" onclick="closeMobileNav()"></div>
+    <div class="mobile-nav-drawer">
+      <h3>🌿 Menu</h3>
+      <a href="./">🏠 Home</a>
+      <a href="./about.html">ℹ️ About Us</a>
+      <a href="./cart.html">🛒 Cart</a>
+      <a href="./order-history.html" id="m-orders-link" style="display:none;">📦 My Orders</a>
+      <a href="./admin.html" id="m-admin-link" style="display:none;">⚙️ Admin</a>
+      <a href="./login.html" id="m-login-link">🔑 Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="m-logout-link" style="display:none;">🚪 Logout</a>
+    </div>
+  </div>
+
+  <!-- ═══ HERO ═══ -->
+  <section class="hero">
+    <div class="hero-content">
+      <div class="hero-badge">🚜 Trusted by 10,000+ Farmers</div>
+      <h1>Quality Products<br>for Every Farmer</h1>
+      <p>Seeds, fertilizers, pesticides & tools — everything you need, delivered to your doorstep.</p>
+      <button class="hero-cta" onclick="document.querySelector('.products').scrollIntoView({behavior:'smooth'})">
+        🛍️ Shop Now
+      </button>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">500+</div>
+          <div class="hero-stat-label">Products</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">10K+</div>
+          <div class="hero-stat-label">Happy Farmers</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">Free</div>
+          <div class="hero-stat-label">Delivery</div>
+        </div>
+      </div>
     </div>
   </section>
 
-  <!-- Products -->
+  <!-- ═══ CATEGORIES ═══ -->
+  <section class="categories">
+    <div class="categories-header">
+      <div class="categories-title">Shop by Category</div>
+    </div>
+    <div class="category-grid">
+      <button class="category-btn active" data-category="all">🌾 All Products</button>
+      <button class="category-btn" data-category="Fertilizers">🧪 Fertilizers</button>
+      <button class="category-btn" data-category="Seeds">🌱 Seeds</button>
+      <button class="category-btn" data-category="Pesticides">🛡️ Pesticides</button>
+      <button class="category-btn" data-category="Tools">🔧 Tools</button>
+    </div>
+  </section>
+
+  <!-- ═══ PRODUCTS ═══ -->
   <section class="products">
-    <h2>Featured Products</h2>
+    <div class="products-header">
+      <h2 id="products-heading">Featured Products</h2>
+      <select class="sort-select" id="sort-select" onchange="handleSort(this.value)">
+        <option value="">Sort: Newest</option>
+        <option value="price_asc">Price: Low to High</option>
+        <option value="price_desc">Price: High to Low</option>
+        <option value="name_asc">Name: A–Z</option>
+      </select>
+    </div>
     <div class="product-grid" id="product-grid"></div>
   </section>
 
-  <!-- Footer -->
+  <!-- ═══ FOOTER ═══ -->
   <footer>
-    <p>© 2025 Farmer Medicine Shop | Designed with ❤️ for Farmers</p>
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">🌿 Farmer Medicine Shop</div>
+        <p>Providing quality agricultural products to farmers across India. From seeds to tools — we've got you covered.
+        </p>
+      </div>
+      <div class="footer-col">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a href="./">Home</a></li>
+          <li><a href="./about.html">About Us</a></li>
+          <li><a href="./cart.html">My Cart</a></li>
+          <li><a href="./order-history.html">My Orders</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Categories</h4>
+        <ul>
+          <li><a href="#" onclick="filterByCategory('Fertilizers')">Fertilizers</a></li>
+          <li><a href="#" onclick="filterByCategory('Seeds')">Seeds</a></li>
+          <li><a href="#" onclick="filterByCategory('Pesticides')">Pesticides</a></li>
+          <li><a href="#" onclick="filterByCategory('Tools')">Tools</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <ul>
+          <li><a href="./login.html">Login</a></li>
+          <li><a href="./signup.html">Register</a></li>
+          <li><a href="./forget.html">Forgot Password</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      © 2025 Farmer Medicine Shop. Made with ❤️ for Indian Farmers. All rights reserved.
+    </div>
   </footer>
+
+  <!-- Global Toast -->
+  <div class="global-toast" id="global-toast"></div>
 
   <script src="js/config.js"></script>
   <script src="script.js"></script>
-  
+  <script src="js/voiceAssistant.js"></script>
+
+  <script>
+    // Hamburger menu
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.add('open');
+    });
+    function closeMobileNav() {
+      document.getElementById('mobile-nav').classList.remove('open');
+    }
+
+    // Sort handler
+    function handleSort(val) {
+      loadProducts(val);
+    }
+
+    // Filter by category from footer
+    function filterByCategory(cat) {
+      document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+      document.querySelector(`.category-btn[data-category="${cat}"]`)?.classList.add('active');
+      window.scrollTo({ top: document.querySelector('.products').offsetTop - 80, behavior: 'smooth' });
+    }
+  </script>
+
   <!-- Firebase SDK -->
   <script type="module">
-    // Import the functions you need from the SDKs you need
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics.js";
-    import { getAuth, signInWithPhoneNumber, RecaptchaVerifier } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
+    import { getAuth } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js";
 
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0LREI7dAK9PhcBf2B5enKpbhWvK69Ylk",
-      authDomain: "farmer-medicine-shop.firebaseapp.com",
-      projectId: "farmer-medicine-shop",
-      storageBucket: "farmer-medicine-shop.firebasestorage.app",
-      messagingSenderId: "807462595239",
-      appId: "1:807462595239:web:465220fbee898deccc8982",
-      measurementId: "G-P3CWE983VD"
-    };
-
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
-    
-    // Make auth available globally
-    window.firebaseAuth = getAuth(app);
+    fetch('/api/config').then(res => res.json()).then(config => {
+      const firebaseConfig = {
+        apiKey: config.FIREBASE_API_KEY,
+        authDomain: config.FIREBASE_AUTH_DOMAIN,
+        projectId: config.FIREBASE_PROJECT_ID,
+        storageBucket: config.FIREBASE_STORAGE_BUCKET,
+        messagingSenderId: config.FIREBASE_MESSAGING_SENDER_ID,
+        appId: config.FIREBASE_APP_ID,
+        measurementId: config.FIREBASE_MEASUREMENT_ID
+      };
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      window.firebaseAuth = getAuth(app);
+      window.dispatchEvent(new Event('firebaseReady'));
+    }).catch(err => console.error("Firebase config error:", err));
   </script>
 </body>
+
 </html>

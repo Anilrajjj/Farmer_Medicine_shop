@@ -1,24 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Reset your password for Farmer Medicine Shop." />
   <title>Forgot Password - Farmer Medicine Shop</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <div class="auth-container">
-    <h2>Reset Password</h2>
-    <form id="resetForm">
-      <input type="email" id="resetEmail" placeholder="Enter your registered email" required><br>
-      <input type="password" id="newPassword" placeholder="Enter new password" required><br>
-      <input type="password" id="confirmPassword" placeholder="Confirm new password" required><br>
-      <button type="submit">Reset Password</button>
-    </form>
-    <p><a href="login.html">Back to Login</a></p>
+  <!-- Navbar -->
+  <header class="navbar">
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <span class="logo-text">Farmer Medicine Shop</span>
+    </div>
+    <nav class="nav-links">
+      <a href="./">Home</a>
+      <a href="./about.html">About</a>
+      <a href="./cart.html" class="nav-cart">🛒 Cart</a>
+      <a href="./login.html" id="login-link" class="nav-login">Login</a>
+    </nav>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
+  </header>
+
+  <!-- Mobile Nav -->
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-backdrop" onclick="document.getElementById('mobile-nav').classList.remove('open')"></div>
+    <div class="mobile-nav-drawer">
+      <h3>🌿 Menu</h3>
+      <a href="./">Home</a>
+      <a href="./about.html">About</a>
+      <a href="./cart.html">Cart</a>
+      <a href="./login.html">Login</a>
+    </div>
+  </div>
+
+  <!-- Two-panel layout -->
+  <div class="auth-page">
+    <!-- Brand Panel -->
+    <div class="auth-brand">
+      <div class="auth-brand-icon">🔒</div>
+      <h2>Reset Password</h2>
+      <p>Recover access to your Farmer Medicine Shop account in just a few steps.</p>
+      <div class="auth-brand-points">
+        <div class="auth-brand-point"><span>🔑</span>
+          <p>Enter your registered email</p>
+        </div>
+        <div class="auth-brand-point"><span>🛡️</span>
+          <p>Set a strong new password</p>
+        </div>
+        <div class="auth-brand-point"><span>✅</span>
+          <p>Sign in and shop again</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="auth-form-panel">
+      <div class="auth-form-box">
+        <h2>Forgot Password?</h2>
+        <p class="auth-subtitle">Enter your registered email and new password below.</p>
+
+        <form id="resetForm">
+          <div class="form-field">
+            <label for="resetEmail">Registered Email</label>
+            <input type="email" id="resetEmail" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="form-field">
+            <label for="newPassword">New Password</label>
+            <input type="password" id="newPassword" placeholder="At least 8 characters" required minlength="8" />
+          </div>
+          <div class="form-field">
+            <label for="confirmPassword">Confirm New Password</label>
+            <input type="password" id="confirmPassword" placeholder="Re-enter new password" required />
+          </div>
+          <button type="submit" class="btn-primary" id="resetBtn">Reset Password →</button>
+        </form>
+
+        <div id="errorMsg" class="error-msg"></div>
+        <div id="successMsg" class="success-msg"></div>
+
+        <div class="auth-links" style="margin-top:20px;">
+          <p>Remember your password? <a href="login.html">Back to Login</a></p>
+          <p>New here? <a href="signup.html">Create an account</a></p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script src="js/config.js"></script>
   <script src="script.js"></script>
+  <script src="js/voiceAssistant.js"></script>
+  <script>
+    // Hamburger
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.add('open');
+    });
+
+    const resetForm = document.getElementById('resetForm');
+    const resetBtn = document.getElementById('resetBtn');
+
+    resetForm.addEventListener('submit', async function (e) {
+      e.preventDefault();
+      const email = document.getElementById('resetEmail').value.trim();
+      const newPassword = document.getElementById('newPassword').value;
+      const confirmPassword = document.getElementById('confirmPassword').value;
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+
+      errorMsg.style.display = 'none';
+      successMsg.style.display = 'none';
+
+      if (newPassword !== confirmPassword) {
+        errorMsg.textContent = '❌ Passwords do not match.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+      if (newPassword.length < 8) {
+        errorMsg.textContent = '❌ Password must be at least 8 characters.';
+        errorMsg.style.display = 'block';
+        return;
+      }
+
+      resetBtn.disabled = true;
+      resetBtn.textContent = 'Resetting…';
+
+      try {
+        const BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || 'http://localhost:5001/api';
+        const res = await fetch(`${BASE}/auth/reset`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, newPassword })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || 'Reset failed');
+        successMsg.textContent = '✅ Password reset successful! Redirecting to login…';
+        successMsg.style.display = 'block';
+        setTimeout(() => window.location.href = 'login.html', 2000);
+      } catch (err) {
+        errorMsg.textContent = '❌ ' + (err.message || 'Reset failed. Please try again.');
+        errorMsg.style.display = 'block';
+        resetBtn.disabled = false;
+        resetBtn.textContent = 'Reset Password →';
+      }
+    });
+  </script>
 </body>
+
 </html>

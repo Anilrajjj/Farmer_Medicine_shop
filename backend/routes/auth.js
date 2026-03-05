@@ -162,8 +162,13 @@ router.post("/signup", async (req, res) => {
       return res.status(400).json({ message: "User with this email already exists" });
     }
 
-    // Check if phone number already exists
-    const existingPhoneUser = await User.findOne({ mobileNumber });
+    // ✅ Normalize phone number before saving (always store without +91)
+    const normalizedMobile = mobileNumber.replace(/^\+91/, '');
+
+    // Check if phone number already exists (check both formats)
+    const existingPhoneUser = await User.findOne({
+      mobileNumber: { $in: [normalizedMobile, '+91' + normalizedMobile] }
+    });
     if (existingPhoneUser) {
       return res.status(400).json({ message: "User with this phone number already exists" });
     }
@@ -175,7 +180,7 @@ router.post("/signup", async (req, res) => {
     const newUser = new User({
       firstName,
       lastName,
-      mobileNumber,
+      mobileNumber: normalizedMobile,
       email,
       password: hashedPassword,
       firebaseUID: firebaseUID || null,
@@ -261,8 +266,13 @@ router.post("/firebase-login", async (req, res) => {
       return res.status(400).json({ message: "Phone number and Firebase UID are required" });
     }
 
-    // Find user by phone number
-    let user = await User.findOne({ mobileNumber: phoneNumber });
+    // ✅ Normalize phone number — try both formats (+918861691360 and 8861691360)
+    const normalizedPhone = phoneNumber.replace(/^\+91/, ''); // strip +91 → "8861691360"
+    const fullPhone = '+91' + normalizedPhone;               // ensure full → "+918861691360"
+
+    let user = await User.findOne({
+      mobileNumber: { $in: [normalizedPhone, fullPhone, phoneNumber] }
+    });
 
     if (!user) {
       return res.status(404).json({ message: "User not found. Please sign up first." });
@@ -316,6 +326,62 @@ router.post("/reset", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// GOOGLE LOGIN / SIGNUP
+router.post("/google-login", async (req, res) => {
+  try {
+    const { googleUID, email, firstName, lastName, photoURL } = req.body;
+
+    if (!googleUID || !email) {
+      return res.status(400).json({ message: "Google UID and email are required" });
+    }
+
+    // Check if user already exists
+    let user = await User.findOne({ $or: [{ email }, { googleUID }] });
+
+    if (user) {
+      // Update googleUID if not set
+      if (!user.googleUID) {
+        user.googleUID = googleUID;
+        await user.save();
+      }
+    } else {
+      // Create new user from Google account (no password needed)
+      user = new User({
+        firstName: firstName || 'User',
+        lastName: lastName || '',
+        email,
+        mobileNumber: '',
+        password: await require('bcryptjs').hash(googleUID + Date.now(), 10), // random password
+        googleUID,
+        phoneVerified: false
+      });
+      await user.save();
+    }
+
+    const token = require('jsonwebtoken').sign(
+      { userId: user._id, email: user.email, role: user.role },
+      process.env.JWT_SECRET || "fallback_secret",
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      message: "Google login successful",
+      token,
+      user: {
+        id: user._id,
+        email: user.email,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        role: user.role
+      }
+    });
+  } catch (err) {
+    console.error("Google login error:", err);
+    res.status(500).json({ message: "Server error during Google login" });
   }
 });
 

@@ -3,29 +3,41 @@ const Order = require("../models/Order");
 const User = require("../models/User");
 const Product = require("../models/Product");
 const { authenticateToken, requireAdmin } = require("../middleware/auth");
+const { sendOrderConfirmation, sendOrderStatusUpdate } = require("../services/emailService");
 
 const router = express.Router();
 
-// PLACE ORDER (authenticated users only)
+// PLACE ORDER (logged-in users only)
 router.post("/place", authenticateToken, async (req, res) => {
   try {
     const { items, totalAmount, shippingAddress, paymentMethod } = req.body;
 
-    // Skip stock validation for local products
+    if (!items || items.length === 0)
+      return res.status(400).json({ message: "No items in order" });
+    if (!shippingAddress || !shippingAddress.fullName)
+      return res.status(400).json({ message: "Shipping address is required" });
 
-    // Create order
     const newOrder = new Order({
       user: req.user._id,
       items,
       totalAmount,
       shippingAddress,
-      paymentMethod,
-      paymentStatus: paymentMethod === "COD" ? "Pending" : "Paid"
+      paymentMethod: paymentMethod || "Cash on Delivery",
+      paymentStatus: "Pending"
     });
 
     await newOrder.save();
 
-    // Skip stock update for local products
+    // Send order confirmation email (non-blocking)
+    try {
+      const user = await User.findById(req.user._id).select("email firstName lastName");
+      if (user && user.email) {
+        const userName = `${user.firstName} ${user.lastName}`.trim() || "Valued Customer";
+        sendOrderConfirmation(user.email, userName, newOrder).catch(() => { });
+      }
+    } catch (emailErr) {
+      console.error("Email fetch error:", emailErr.message);
+    }
 
     res.status(201).json({
       message: "Order placed successfully!",
@@ -33,8 +45,8 @@ router.post("/place", authenticateToken, async (req, res) => {
       order: newOrder
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
+    console.error("Order error:", err);
+    res.status(500).json({ message: err.message || "Server error" });
   }
 });
 
@@ -42,8 +54,8 @@ router.post("/place", authenticateToken, async (req, res) => {
 router.get("/my-orders", authenticateToken, async (req, res) => {
   try {
     const orders = await Order.find({ user: req.user._id })
-                              .populate("items.productId")
-                              .sort({ createdAt: -1 });
+      .populate("items.productId")
+      .sort({ createdAt: -1 });
 
     res.json(orders);
   } catch (err) {
@@ -84,11 +96,11 @@ router.get("/admin/all", authenticateToken, requireAdmin, async (req, res) => {
     }
 
     const orders = await Order.find(query)
-                              .populate("user", "firstName lastName email")
-                              .populate("items.productId", "name price")
-                              .sort({ createdAt: -1 })
-                              .skip((page - 1) * limit)
-                              .limit(parseInt(limit));
+      .populate("user", "firstName lastName email")
+      .populate("items.productId", "name price")
+      .sort({ createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
     const total = await Order.countDocuments(query);
 
@@ -106,7 +118,7 @@ router.get("/admin/all", authenticateToken, requireAdmin, async (req, res) => {
   }
 });
 
-// UPDATE ORDER STATUS (admin only)
+// UPDATE ORDER STATUS (admin only) — sends email notification to user
 router.patch("/:id/status", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { status } = req.body;
@@ -119,6 +131,16 @@ router.patch("/:id/status", authenticateToken, requireAdmin, async (req, res) =>
 
     if (!order) {
       return res.status(404).json({ message: "Order not found" });
+    }
+
+    // Send status update email (non-blocking)
+    try {
+      if (order.user && order.user.email) {
+        const userName = `${order.user.firstName} ${order.user.lastName}`.trim() || "Valued Customer";
+        sendOrderStatusUpdate(order.user.email, userName, order, status).catch(() => { });
+      }
+    } catch (emailErr) {
+      console.error("Status email error:", emailErr.message);
     }
 
     res.json({ message: "Order status updated successfully", order });
@@ -147,10 +169,19 @@ router.patch("/:id/cancel", authenticateToken, async (req, res) => {
       return res.status(400).json({ message: "Cannot cancel order that is already processed" });
     }
 
-    // Skip stock restoration for local products
-
     order.status = "Cancelled";
     await order.save();
+
+    // Send cancellation email (non-blocking)
+    try {
+      const user = await User.findById(req.user._id).select("email firstName lastName");
+      if (user && user.email) {
+        const userName = `${user.firstName} ${user.lastName}`.trim() || "Valued Customer";
+        sendOrderStatusUpdate(user.email, userName, order, "Cancelled").catch(() => { });
+      }
+    } catch (emailErr) {
+      console.error("Cancel email error:", emailErr.message);
+    }
 
     res.json({ message: "Order cancelled successfully", order });
   } catch (err) {

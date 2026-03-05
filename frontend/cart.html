@@ -1,41 +1,134 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Your Cart - Farmer Medicine Shop</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
-  <!-- Navbar -->
+<body>
   <header class="navbar">
-    <div class="logo">🌿 Farmer Medicine Shop</div>
-    <div class="nav-links">
-      <a href="./">Home</a>
-      <a href="./about.html">About Us</a>
-      <a href="./cart.html" class="active">Cart 🛒</a>
-      <a href="./login.html" id="login-link">Login</a>
-      <a href="#" id="logout-link" style="display:none;">Logout</a>
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <span class="logo-text">Farmer Medicine Shop</span>
     </div>
+    <nav class="nav-links">
+      <a href="./">Home</a>
+      <a href="./about.html">About</a>
+      <a href="./cart.html" class="active nav-cart">🛒 Cart</a>
+      <a href="./order-history.html" id="orders-link" style="display:none;">My Orders</a>
+      <a href="./login.html" id="login-link" class="nav-login">Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
+    </nav>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </header>
 
-  <!-- Cart Section -->
-  <section class="cart">
-    <h2>Your Shopping Cart</h2>
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-backdrop" onclick="document.getElementById('mobile-nav').classList.remove('open')"></div>
+    <div class="mobile-nav-drawer">
+      <h3>🌿 Menu</h3>
+      <a href="./">🏠 Home</a>
+      <a href="./about.html">ℹ️ About</a>
+      <a href="./cart.html">🛒 Cart</a>
+      <a href="./order-history.html" id="m-orders-link" style="display:none;">📦 My Orders</a>
+      <a href="./login.html" id="m-login-link">🔑 Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="m-logout-link" style="display:none;">🚪 Logout</a>
+    </div>
+  </div>
+
+  <div class="cart-wrapper">
+    <h2>🛒 Your Shopping Cart</h2>
     <div id="cart-items"></div>
-    <h3 id="cart-total"></h3>
-
-    <!-- Checkout button (hidden initially) -->
-    <button id="checkout-btn" class="checkout-btn" style="display:none;">Proceed to Checkout</button>
-
-  </section>
+    <div class="cart-total-card" id="cart-total-card" style="display:none;">
+      <div>
+        <div class="cart-total-label">Total Amount</div>
+        <div class="cart-total-value" id="cart-total-value">₹0</div>
+      </div>
+      <button id="checkout-btn" class="checkout-btn" onclick="proceedToCheckout()">Proceed to Checkout →</button>
+    </div>
+  </div>
 
   <footer>
-    <p>© 2025 Farmer Medicine Shop</p>
+    <div class="footer-bottom" style="margin-top:0">
+      © 2025 Farmer Medicine Shop | Made with ❤️ for Farmers
+    </div>
   </footer>
 
   <script src="js/config.js"></script>
   <script src="script.js"></script>
+  <script src="js/voiceAssistant.js"></script>
+  <script>
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.add('open');
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavbar();
+      renderCart();
+    });
+
+    // Override renderCart to use new styles
+    function renderCart() {
+      const container = document.getElementById('cart-items');
+      const totalCard = document.getElementById('cart-total-card');
+      const totalVal = document.getElementById('cart-total-value');
+      const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      if (!container) return;
+
+      if (!cart.length) {
+        container.innerHTML = `<div style="text-align:center;padding:60px 20px;background:#fff;border-radius:14px;border:1px solid #e2e8f0;margin-bottom:20px;">
+          <div style="font-size:64px;margin-bottom:16px;">🛒</div>
+          <h3 style="font-size:20px;color:#0f172a;margin-bottom:8px;">Your cart is empty</h3>
+          <p style="color:#94a3b8;margin-bottom:24px;">Add some products to get started</p>
+          <a href="./" style="background:#16a34a;color:#fff;padding:12px 28px;border-radius:999px;font-weight:700;font-size:15px;">Shop Now →</a>
+        </div>`;
+        if (totalCard) totalCard.style.display = 'none';
+        return;
+      }
+
+      let total = 0;
+      container.innerHTML = cart.map((item, idx) => {
+        const lineTotal = item.price * item.quantity;
+        total += lineTotal;
+        return `<div class="cart-item">
+          <img class="cart-img" src="${item.image}" alt="${item.name}" onerror="this.src='images/placeholder.png'" />
+          <div class="cart-item-body" style="flex:1">
+            <div class="cart-item-name">${item.name}</div>
+            <div class="cart-item-price">₹${item.price.toLocaleString('en-IN')} per unit</div>
+            <div class="quantity-controls">
+              <button class="qty-btn" onclick="changeQty(${idx},-1)">−</button>
+              <span class="quantity">${item.quantity}</span>
+              <button class="qty-btn" onclick="changeQty(${idx},1)">+</button>
+            </div>
+            <div style="font-size:15px;font-weight:700;color:#16a34a;">Subtotal: ₹${lineTotal.toLocaleString('en-IN')}</div>
+          </div>
+          <button class="remove-btn" onclick="removeItem(${idx})">🗑️ Remove</button>
+        </div>`;
+      }).join('');
+
+      totalVal.textContent = '₹' + total.toLocaleString('en-IN');
+      if (totalCard) totalCard.style.display = 'flex';
+    }
+
+    function changeQty(idx, delta) {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      if (!cart[idx]) return;
+      cart[idx].quantity = Math.max(1, cart[idx].quantity + delta);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+
+    function removeItem(idx) {
+      let cart = JSON.parse(localStorage.getItem('cart') || '[]');
+      cart.splice(idx, 1);
+      localStorage.setItem('cart', JSON.stringify(cart));
+      renderCart();
+    }
+  </script>
 </body>
+
 </html>

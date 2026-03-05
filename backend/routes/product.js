@@ -6,42 +6,34 @@ const { upload, uploadToCloudinary, deleteFromCloudinary } = require("../utils/i
 const router = express.Router();
 
 // GET ALL PRODUCTS (public)
-router.get("/", (req, res) => {
+router.get("/", async (req, res) => {
   try {
-    const { category, search, sort, page = 1, limit = 20 } = req.query;
+    const { category, search, sort, page = 1, limit = 100 } = req.query;
 
-    let products = Product.find();
+    let query = { isActive: true };
 
-    // Filter by category
-    if (category && category !== 'all') {
-      products = products.filter(p => p.category === category);
+    if (category && category !== "all") {
+      query.category = category;
     }
 
-    // Search functionality
     if (search) {
-      const regex = new RegExp(search, 'i');
-      products = products.filter(p => regex.test(p.name) || regex.test(p.description));
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { description: { $regex: search, $options: "i" } }
+      ];
     }
 
-    // Sorting
-    if (sort === 'price_asc') {
-      products.sort((a, b) => a.price - b.price);
-    } else if (sort === 'price_desc') {
-      products.sort((a, b) => b.price - a.price);
-    } else if (sort === 'name_asc') {
-      products.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sort === 'name_desc') {
-      products.sort((a, b) => b.name.localeCompare(a.name));
-    } else {
-      // Default sort by id desc (assuming higher id is newer)
-      products.sort((a, b) => b.id - a.id);
-    }
+    let sortOption = { createdAt: -1 };
+    if (sort === "price_asc") sortOption = { price: 1 };
+    else if (sort === "price_desc") sortOption = { price: -1 };
+    else if (sort === "name_asc") sortOption = { name: 1 };
+    else if (sort === "name_desc") sortOption = { name: -1 };
 
-    const total = products.length;
-
-    // Pagination
-    const skip = (page - 1) * limit;
-    products = products.slice(skip, skip + parseInt(limit));
+    const total = await Product.countDocuments(query);
+    const products = await Product.find(query)
+      .sort(sortOption)
+      .skip((page - 1) * limit)
+      .limit(parseInt(limit));
 
     res.json({
       products,
@@ -49,7 +41,7 @@ router.get("/", (req, res) => {
         currentPage: parseInt(page),
         totalPages: Math.ceil(total / limit),
         totalProducts: total,
-        hasNext: skip + parseInt(limit) < total,
+        hasNext: (page - 1) * limit + products.length < total,
         hasPrev: page > 1
       }
     });
@@ -59,11 +51,23 @@ router.get("/", (req, res) => {
   }
 });
 
-// GET SINGLE PRODUCT (public)
-router.get("/:id", (req, res) => {
+// GET ALL PRODUCTS FOR ADMIN (admin only - includes inactive)
+// ⚠️ Must come BEFORE /:id to avoid conflict
+router.get("/admin/all", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const product = Product.findById(req.params.id);
-    if (!product) {
+    const products = await Product.find().sort({ createdAt: -1 });
+    res.json(products);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// GET SINGLE PRODUCT (public)
+router.get("/:id", async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id);
+    if (!product || !product.isActive) {
       return res.status(404).json({ message: "Product not found" });
     }
     res.json(product);
@@ -73,36 +77,17 @@ router.get("/:id", (req, res) => {
   }
 });
 
-// GET PRODUCTS BY CATEGORY (public)
-router.get("/category/:category", (req, res) => {
-  try {
-    const products = Product.find({ category: req.params.category });
-    res.json(products);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 // ADD PRODUCT (admin only)
-router.post("/add", authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
+router.post("/add", authenticateToken, requireAdmin, upload.single("image"), async (req, res) => {
   try {
-    let imageUrl = '';
-
-    // Upload image to Cloudinary if provided
+    let imageUrl = req.body.image || "";
     if (req.file) {
-      const uploadResult = await uploadToCloudinary(req.file.buffer);
-      imageUrl = uploadResult.url;
+      const result = await uploadToCloudinary(req.file.buffer);
+      imageUrl = result.url;
     }
 
-    const productData = {
-      ...req.body,
-      image: imageUrl || req.body.image, // Use uploaded image or provided URL
-      id: Date.now() // Simple ID generation
-    };
-
-    const product = new Product(productData);
-    product.save();
+    const product = new Product({ ...req.body, image: imageUrl });
+    await product.save();
 
     res.status(201).json({ message: "Product added successfully", product });
   } catch (err) {
@@ -112,40 +97,24 @@ router.post("/add", authenticateToken, requireAdmin, upload.single('image'), asy
 });
 
 // UPDATE PRODUCT (admin only)
-router.put("/:id", authenticateToken, requireAdmin, upload.single('image'), async (req, res) => {
+router.put("/:id", authenticateToken, requireAdmin, upload.single("image"), async (req, res) => {
   try {
-    const product = Product.findById(req.params.id);
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
+    const product = await Product.findById(req.params.id);
+    if (!product) return res.status(404).json({ message: "Product not found" });
 
     let imageUrl = product.image;
-
-    // Upload new image to Cloudinary if provided
     if (req.file) {
-      // Delete old image if it exists
-      if (product.image && product.image.includes('cloudinary')) {
-        const publicId = product.image.split('/').pop().split('.')[0];
-        await deleteFromCloudinary(publicId);
-      }
-
-      const uploadResult = await uploadToCloudinary(req.file.buffer);
-      imageUrl = uploadResult.url;
+      const result = await uploadToCloudinary(req.file.buffer);
+      imageUrl = result.url;
     }
 
-    const productData = {
-      ...req.body,
-      image: imageUrl
-    };
-
-    const updatedProduct = Product.findByIdAndUpdate(
+    const updated = await Product.findByIdAndUpdate(
       req.params.id,
-      productData,
+      { ...req.body, image: imageUrl },
       { new: true }
     );
 
-    res.json({ message: "Product updated successfully", product: updatedProduct });
+    res.json({ message: "Product updated successfully", product: updated });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: "Server error" });
@@ -153,18 +122,14 @@ router.put("/:id", authenticateToken, requireAdmin, upload.single('image'), asyn
 });
 
 // DELETE PRODUCT (admin only - soft delete)
-router.delete("/:id", authenticateToken, requireAdmin, (req, res) => {
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const product = Product.findByIdAndUpdate(
+    const product = await Product.findByIdAndUpdate(
       req.params.id,
       { isActive: false },
       { new: true }
     );
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
+    if (!product) return res.status(404).json({ message: "Product not found" });
     res.json({ message: "Product deleted successfully" });
   } catch (err) {
     console.error(err);
@@ -172,31 +137,15 @@ router.delete("/:id", authenticateToken, requireAdmin, (req, res) => {
   }
 });
 
-// GET ALL PRODUCTS FOR ADMIN (admin only - includes inactive)
-router.get("/admin/all", authenticateToken, requireAdmin, (req, res) => {
-  try {
-    const products = Product.findAll().sort((a, b) => b.id - a.id);
-    res.json(products);
-  } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: "Server error" });
-  }
-});
-
 // UPDATE STOCK (admin only)
-router.patch("/:id/stock", authenticateToken, requireAdmin, (req, res) => {
+router.patch("/:id/stock", authenticateToken, requireAdmin, async (req, res) => {
   try {
-    const { stock } = req.body;
-    const product = Product.findByIdAndUpdate(
+    const product = await Product.findByIdAndUpdate(
       req.params.id,
-      { stock },
+      { stock: req.body.stock },
       { new: true }
     );
-
-    if (!product) {
-      return res.status(404).json({ message: "Product not found" });
-    }
-
+    if (!product) return res.status(404).json({ message: "Product not found" });
     res.json({ message: "Stock updated successfully", product });
   } catch (err) {
     console.error(err);

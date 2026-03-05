@@ -1,66 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Login to Farmer Medicine Shop — Access your account to shop and track orders." />
   <title>Login - Farmer Medicine Shop</title>
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
-  <!-- Navbar -->
+  <!-- Minimal navbar -->
   <header class="navbar">
-    <div class="logo">🌿 Farmer Medicine Shop</div>
-    <div class="nav-links">
-      <a href="./">Home</a>
-      <a href="./about.html">About Us</a>
-      <a href="./cart.html">Cart 🛒</a>
-      <a href="./login.html" id="login-link">Login</a>
-      <a href="#" id="logout-link" style="display:none;">Logout</a>
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <span class="logo-text">Farmer Medicine Shop</span>
     </div>
+    <nav class="nav-links">
+      <a href="./">Home</a>
+      <a href="./about.html">About</a>
+      <a href="./cart.html" class="nav-cart">🛒 Cart</a>
+      <a href="./login.html" id="login-link" class="nav-login">Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
+    </nav>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </header>
 
-  <!-- Login Section -->
-  <div class="login">
-    <h2>Login</h2>
-
-    <!-- Simple Email/Password Login Form -->
-    <form id="loginForm" class="login-form active">
-      <input type="email" id="loginEmail" placeholder="Email" required />
-      <input type="password" id="loginPassword" placeholder="Password" required />
-      <button type="submit">Login</button>
-    </form>
-
-    <p>Don’t have an account? <a href="signup.html">Sign up here</a></p>
-    <p><a href="forget.html">Forgot Password?</a></p>
+  <!-- Mobile Nav -->
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-backdrop" onclick="document.getElementById('mobile-nav').classList.remove('open')"></div>
+    <div class="mobile-nav-drawer">
+      <h3>🌿 Menu</h3>
+      <a href="./">Home</a>
+      <a href="./about.html">About</a>
+      <a href="./cart.html">Cart</a>
+      <a href="./login.html">Login</a>
+    </div>
   </div>
 
-  <script src="js/config.js"></script>
-  <script src="script.js"></script>
-  
+  <!-- ═══ TWO-PANEL AUTH LAYOUT ═══ -->
+  <div class="auth-page">
+    <!-- Brand Panel -->
+    <div class="auth-brand">
+      <div class="auth-brand-icon">🌾</div>
+      <h2>Welcome Back!</h2>
+      <p>Sign in to your Farmer Medicine Shop account to continue shopping.</p>
+      <div class="auth-brand-points">
+        <div class="auth-brand-point"><span>🚚</span>
+          <p>Free delivery on all orders</p>
+        </div>
+        <div class="auth-brand-point"><span>✅</span>
+          <p>100% genuine products</p>
+        </div>
+        <div class="auth-brand-point"><span>📦</span>
+          <p>Track your orders in real-time</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Form Panel -->
+    <div class="auth-form-panel">
+      <div class="auth-form-box">
+        <h2>Sign In</h2>
+        <p class="auth-subtitle">Enter your credentials to access your account</p>
+
+        <!-- Email/Password Form -->
+        <form id="loginForm">
+          <div class="form-field">
+            <label for="loginEmail">Email Address</label>
+            <input type="email" id="loginEmail" placeholder="you@example.com" required autocomplete="email" />
+          </div>
+          <div class="form-field">
+            <label for="loginPassword">Password</label>
+            <input type="password" id="loginPassword" placeholder="Your password" required
+              autocomplete="current-password" />
+          </div>
+          <button type="submit" class="btn-primary" id="loginBtn">Sign In →</button>
+        </form>
+
+        <div id="errorMsg" class="error-msg"></div>
+        <div id="successMsg" class="success-msg"></div>
+
+        <div class="auth-divider"><span>or</span></div>
+
+        <!-- Google Sign-In -->
+        <button class="btn-google-new" id="googleSignInBtn">
+          <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="Google" />
+          Continue with Google
+        </button>
+
+        <div class="auth-links">
+          <p style="margin-bottom:8px;">Don't have an account? <a href="signup.html">Sign up free</a></p>
+          <p><a href="forget.html">Forgot your password?</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-analytics-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/config.js"></script>
+  <script src="script.js"></script>
+  <script src="js/voiceAssistant.js"></script>
 
   <script>
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-      apiKey: "AIzaSyC0LREI7dAK9PhcBf2B5enKpbhWvK69Ylk",
-      authDomain: "farmer-medicine-shop.firebaseapp.com",
-      projectId: "farmer-medicine-shop",
-      storageBucket: "farmer-medicine-shop.firebasestorage.app",
-      messagingSenderId: "807462595239",
-      appId: "1:807462595239:web:465220fbee898deccc8982",
-      measurementId: "G-P3CWE983VD"
-    };
+    // Hamburger
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.add('open');
+    });
 
-    // Initialize Firebase
-    firebase.initializeApp(firebaseConfig);
-    firebase.analytics();
-
-    // Make auth and RecaptchaVerifier available globally
-    window.firebaseAuth = firebase.auth();
-    window.RecaptchaVerifier = firebase.auth.RecaptchaVerifier;
+    // Login form
+    const loginForm = document.getElementById('loginForm');
+    const loginBtn = document.getElementById('loginBtn');
+    if (loginForm) {
+      loginForm.addEventListener('submit', async function (e) {
+        e.preventDefault();
+        const email = document.getElementById('loginEmail').value.trim();
+        const password = document.getElementById('loginPassword').value;
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+        loginBtn.disabled = true;
+        loginBtn.textContent = 'Signing in…';
+        try {
+          await loginUser(email, password);
+        } catch (err) {
+          errorMsg.textContent = '❌ ' + (err.message || 'Login failed. Please try again.');
+          errorMsg.style.display = 'block';
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'Sign In →';
+        }
+      });
+    }
   </script>
 </body>
+
 </html>

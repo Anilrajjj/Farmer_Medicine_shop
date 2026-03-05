@@ -1,75 +1,139 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>About Us - Farmer Medicine Shop</title>
   <link rel="stylesheet" href="style.css">
 </head>
-<body>
 
+<body>
   <header class="navbar">
-    <div class="logo">🌿 Farmer Medicine Shop</div>
-    <div class="nav-links">
-      <a href="./">Home</a>
-      <a href="./about.html" class="active">About Us</a>
-      <a href="./cart.html">Cart 🛒</a>
-      <a href="./login.html" id="login-link">Login</a>
-      <a href="#" id="logout-link" style="display:none;">Logout</a>
+    <div class="logo">
+      <div class="logo-icon">🌿</div>
+      <span class="logo-text">Farmer Medicine Shop</span>
     </div>
+    <nav class="nav-links">
+      <a href="./">Home</a>
+      <a href="./about.html" class="active">About</a>
+      <a href="./cart.html" class="nav-cart">🛒 Cart</a>
+      <a href="./login.html" id="login-link" class="nav-login">Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
+    </nav>
+    <button class="hamburger" id="hamburger-btn" aria-label="Menu">
+      <span></span><span></span><span></span>
+    </button>
   </header>
 
-  <section class="about">
-    <h2>About Us</h2>
-    <p>
-      Farmer Medicine Shop is an online platform dedicated to providing farmers with
-      high-quality fertilizers, seeds, pesticides, and tools at affordable prices.
-      Our mission is to empower farmers with reliable agricultural products to
-      increase crop yield and ensure sustainable farming.
-    </p>
+  <div class="mobile-nav" id="mobile-nav">
+    <div class="mobile-nav-backdrop" onclick="document.getElementById('mobile-nav').classList.remove('open')"></div>
+    <div class="mobile-nav-drawer">
+      <h3>🌿 Menu</h3>
+      <a href="./">🏠 Home</a>
+      <a href="./about.html">ℹ️ About</a>
+      <a href="./cart.html">🛒 Cart</a>
+      <a href="./login.html" id="m-login-link">🔑 Login</a>
+      <a href="javascript:void(0)" onclick="logoutUser()" id="m-logout-link" style="display:none;">🚪 Logout</a>
+    </div>
+  </div>
+
+  <!-- Hero -->
+  <section style="background:linear-gradient(135deg,#14532d,#16a34a);padding:56px 24px;text-align:center;color:#fff;">
+    <div style="font-size:56px;margin-bottom:16px;">🌾</div>
+    <h1 style="font-size:clamp(24px,4vw,40px);font-weight:900;color:#fff;margin-bottom:12px;">About Farmer Medicine Shop
+    </h1>
+    <p style="font-size:16px;color:rgba(255,255,255,.82);max-width:560px;margin:0 auto;line-height:1.7;">Your trusted
+      partner for quality agricultural products — empowering Indian farmers since 2020.</p>
   </section>
 
+  <!-- Content -->
+  <div style="max-width:940px;margin:48px auto;padding:0 20px 60px;">
+
+    <!-- Mission -->
+    <div
+      style="background:#fff;border-radius:16px;padding:36px;box-shadow:0 1px 4px rgba(0,0,0,.06);border:1px solid #e2e8f0;margin-bottom:24px;">
+      <h2 style="font-size:22px;color:#14532d;margin-bottom:14px;">🎯 Our Mission</h2>
+      <p style="color:#475569;line-height:1.8;font-size:15px;">At Farmer Medicine Shop, we're dedicated to empowering
+        Indian farmers with the best agricultural products at affordable prices. We believe every farmer deserves access
+        to quality seeds, fertilizers, pesticides and tools — right at their doorstep.</p>
+    </div>
+
+    <!-- Feature Cards -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:18px;margin-bottom:24px;">
+      <div
+        style="background:#fff;border-radius:14px;padding:24px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+        <div style="font-size:36px;margin-bottom:12px;">🌱</div>
+        <h3 style="font-size:16px;color:#0f172a;margin-bottom:8px;">Quality Products</h3>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.6;">100% genuine seeds, fertilizers, and pesticides
+          sourced from certified manufacturers.</p>
+      </div>
+      <div
+        style="background:#fff;border-radius:14px;padding:24px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+        <div style="font-size:36px;margin-bottom:12px;">🚚</div>
+        <h3 style="font-size:16px;color:#0f172a;margin-bottom:8px;">Free Delivery</h3>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.6;">Free doorstep delivery on every order, right to your
+          farm or village.</p>
+      </div>
+      <div
+        style="background:#fff;border-radius:14px;padding:24px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+        <div style="font-size:36px;margin-bottom:12px;">💰</div>
+        <h3 style="font-size:16px;color:#0f172a;margin-bottom:8px;">Affordable Prices</h3>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.6;">Competitive prices with multiple payment options
+          including COD, UPI, and card.</p>
+      </div>
+      <div
+        style="background:#fff;border-radius:14px;padding:24px;border:1px solid #e2e8f0;box-shadow:0 1px 4px rgba(0,0,0,.05);">
+        <div style="font-size:36px;margin-bottom:12px;">🤝</div>
+        <h3 style="font-size:16px;color:#0f172a;margin-bottom:8px;">Expert Support</h3>
+        <p style="font-size:13.5px;color:#64748b;line-height:1.6;">Our agriculture experts are always ready to help you
+          choose the right products.</p>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div
+      style="background:linear-gradient(135deg,#14532d,#16a34a);border-radius:16px;padding:36px;color:#fff;display:flex;justify-content:space-around;flex-wrap:wrap;gap:20px;text-align:center;">
+      <div>
+        <div style="font-size:36px;font-weight:900">500+</div>
+        <div style="font-size:14px;opacity:.8">Products</div>
+      </div>
+      <div>
+        <div style="font-size:36px;font-weight:900">10K+</div>
+        <div style="font-size:14px;opacity:.8">Farmers Served</div>
+      </div>
+      <div>
+        <div style="font-size:36px;font-weight:900">4</div>
+        <div style="font-size:14px;opacity:.8">Categories</div>
+      </div>
+      <div>
+        <div style="font-size:36px;font-weight:900">5★</div>
+        <div style="font-size:14px;opacity:.8">Avg. Rating</div>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div style="text-align:center;margin-top:36px;">
+      <a href="./"
+        style="display:inline-block;background:#16a34a;color:#fff;padding:14px 36px;border-radius:999px;font-weight:700;font-size:16px;box-shadow:0 4px 14px rgba(22,163,74,.35);transition:.2s;">Start
+        Shopping →</a>
+    </div>
+  </div>
+
   <footer>
-    <p>© 2025 Farmer Medicine Shop</p>
+    <div class="footer-bottom" style="margin-top:0">
+      © 2025 Farmer Medicine Shop | Made with ❤️ for Indian Farmers
+    </div>
   </footer>
 
+  <script src="js/config.js"></script>
+  <script src="script.js"></script>
   <script>
-    // Basic functions for about page
-    function isUserLoggedIn() {
-      return localStorage.getItem("isLoggedIn") === "true";
-    }
-
-    function updateNavbar() {
-      const loginLink = document.getElementById("login-link");
-      const logoutLink = document.getElementById("logout-link");
-
-      if (!loginLink || !logoutLink) return;
-
-      if (isUserLoggedIn()) {
-        loginLink.style.display = "none";
-        logoutLink.style.display = "inline";
-        logoutLink.onclick = logoutUser;
-      } else {
-        loginLink.style.display = "inline";
-        logoutLink.style.display = "none";
-      }
-    }
-
-    function logoutUser() {
-      if (!confirm("Are you sure you want to logout?")) return;
-
-      localStorage.removeItem("isLoggedIn");
-      localStorage.removeItem("userEmail");
-      localStorage.removeItem("cart");
-      updateNavbar();
-      alert("✅ Logged out successfully.");
-      window.location.href = "login.html";
-    }
-
-    // Initialize when page loads
-    document.addEventListener("DOMContentLoaded", function () {
-      updateNavbar();
+    document.getElementById('hamburger-btn').addEventListener('click', () => {
+      document.getElementById('mobile-nav').classList.add('open');
     });
+    document.addEventListener('DOMContentLoaded', updateNavbar);
   </script>
 </body>
+
 </html>

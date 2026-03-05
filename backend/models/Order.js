@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
 const OrderSchema = new mongoose.Schema({
-  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+  user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: false },
 
   items: [
     {
@@ -23,7 +23,7 @@ const OrderSchema = new mongoose.Schema({
     phone: { type: String, required: true },
   },
 
-  paymentMethod: { type: String, enum: ["COD", "Card", "UPI"], default: "COD" },
+  paymentMethod: { type: String, default: "Cash on Delivery" },
   paymentStatus: { type: String, enum: ["Pending", "Paid", "Failed", "Refunded"], default: "Pending" },
   status: { type: String, enum: ["Pending", "Processing", "Shipped", "Delivered", "Cancelled"], default: "Pending" },
 }, { timestamps: true });

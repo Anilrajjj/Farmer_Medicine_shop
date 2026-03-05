@@ -1,170 +1,416 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Order History - Farmer Medicine Shop</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Orders - Farmer Medicine Shop</title>
+  <link rel="stylesheet" href="style.css" />
   <style>
-    .orders-container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px;
+    body {
+      background: #f4f4f9;
     }
 
+    .orders-page {
+      max-width: 860px;
+      margin: 30px auto;
+      padding: 0 16px 60px;
+    }
+
+    .orders-page h1 {
+      font-size: 26px;
+      color: #2e7d32;
+      margin-bottom: 24px;
+    }
+
+    /* ===== ORDER CARD ===== */
     .order-card {
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-      margin-bottom: 20px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      margin-bottom: 24px;
       overflow: hidden;
     }
 
     .order-header {
-      background: #f5f5f5;
-      padding: 15px;
-      border-bottom: 1px solid #ddd;
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .order-id {
-      font-weight: bold;
-      color: #2e7d32;
-    }
-
-    .order-date {
-      color: #666;
-      font-size: 14px;
-    }
-
-    .order-status {
-      padding: 4px 8px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: bold;
-    }
-
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-processing { background: #cce5ff; color: #004085; }
-    .status-shipped { background: #d1ecf1; color: #0c5460; }
-    .status-delivered { background: #d4edda; color: #155724; }
-    .status-cancelled { background: #f8d7da; color: #721c24; }
-
-    .order-body {
-      padding: 15px;
-    }
-
-    .order-items {
-      margin-bottom: 15px;
-    }
-
-    .order-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    .item-info {
-      display: flex;
-      align-items: center;
+      padding: 16px 20px;
+      background: #f8fff8;
+      border-bottom: 1px solid #e8f5e9;
+      flex-wrap: wrap;
       gap: 10px;
     }
 
-    .item-image {
-      width: 50px;
-      height: 50px;
-      object-fit: cover;
-      border-radius: 5px;
+    .order-meta {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
     }
 
-    .item-details h4 {
-      margin: 0;
-      font-size: 16px;
-    }
-
-    .item-details p {
-      margin: 5px 0 0 0;
-      color: #666;
-      font-size: 14px;
-    }
-
-    .order-total {
-      text-align: right;
-      font-size: 18px;
-      font-weight: bold;
+    .order-id {
+      font-weight: 700;
       color: #2e7d32;
-      margin-top: 15px;
+      font-size: 15px;
     }
 
-    .order-address {
-      background: #f9f9f9;
-      padding: 15px;
-      border-radius: 5px;
-      margin-top: 15px;
+    .order-date {
+      color: #888;
+      font-size: 13px;
     }
 
-    .order-address h4 {
-      margin: 0 0 10px 0;
+    .order-status-badge {
+      padding: 5px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .badge-pending {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .badge-processing {
+      background: #cce5ff;
+      color: #004085;
+    }
+
+    .badge-shipped {
+      background: #d1ecf1;
+      color: #0c5460;
+    }
+
+    .badge-delivered {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .badge-cancelled {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    /* ===== TRACKING TIMELINE ===== */
+    .tracking-section {
+      padding: 24px 20px 12px;
+      border-bottom: 1px solid #f0f0f0;
+    }
+
+    .tracking-section h4 {
+      margin: 0 0 18px;
+      font-size: 14px;
+      color: #555;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .timeline {
+      display: flex;
+      align-items: flex-start;
+      position: relative;
+      overflow-x: auto;
+      padding-bottom: 6px;
+    }
+
+    .timeline-step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+      min-width: 90px;
+      position: relative;
+      text-align: center;
+    }
+
+    /* Connector line between steps */
+    .timeline-step:not(:last-child)::after {
+      content: '';
+      position: absolute;
+      top: 16px;
+      left: 50%;
+      width: 100%;
+      height: 3px;
+      background: #ddd;
+      z-index: 0;
+      transition: background 0.4s;
+    }
+
+    .timeline-step.done:not(:last-child)::after {
+      background: #2e7d32;
+    }
+
+    .step-dot {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 3px solid #ddd;
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+      position: relative;
+      z-index: 1;
+      transition: all 0.3s;
+    }
+
+    .timeline-step.done .step-dot {
+      border-color: #2e7d32;
+      background: #2e7d32;
+      box-shadow: 0 0 0 4px rgba(46, 125, 50, 0.15);
+    }
+
+    .timeline-step.active .step-dot {
+      border-color: #ff9f00;
+      background: #ff9f00;
+      box-shadow: 0 0 0 4px rgba(255, 159, 0, 0.2);
+      animation: pulse-dot 1.5s infinite;
+    }
+
+    @keyframes pulse-dot {
+
+      0%,
+      100% {
+        transform: scale(1);
+      }
+
+      50% {
+        transform: scale(1.12);
+      }
+    }
+
+    .step-icon {
+      font-size: 15px;
+    }
+
+    .step-label {
+      margin-top: 8px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #aaa;
+      line-height: 1.3;
+    }
+
+    .timeline-step.done .step-label {
+      color: #2e7d32;
+    }
+
+    .timeline-step.active .step-label {
+      color: #e65c00;
+      font-weight: 700;
+    }
+
+    .step-date {
+      font-size: 10px;
+      color: #bbb;
+      margin-top: 3px;
+    }
+
+    .timeline-step.done .step-date {
+      color: #81c784;
+    }
+
+    .timeline-step.active .step-date {
+      color: #ff9f00;
+    }
+
+    /* ===== ORDER ITEMS ===== */
+    .order-items-section {
+      padding: 16px 20px;
+    }
+
+    .order-item-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 0;
+      border-bottom: 1px solid #f5f5f5;
+    }
+
+    .order-item-row:last-child {
+      border-bottom: none;
+    }
+
+    .order-item-img {
+      width: 54px;
+      height: 54px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #eee;
+      flex-shrink: 0;
+    }
+
+    .order-item-info {
+      flex: 1;
+    }
+
+    .order-item-info .i-name {
+      font-size: 14px;
+      font-weight: 600;
       color: #333;
     }
 
-    .order-actions {
-      text-align: right;
-      padding: 15px;
-      background: #f5f5f5;
+    .order-item-info .i-qty {
+      font-size: 13px;
+      color: #888;
+      margin-top: 2px;
     }
 
-    .btn {
-      padding: 8px 16px;
-      background: #2e7d32;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
+    .order-item-price {
       font-size: 14px;
-      margin-left: 10px;
+      font-weight: 700;
+      color: #2e7d32;
     }
 
-    .btn:hover {
+    /* ===== ORDER FOOTER ===== */
+    .order-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      background: #fafafa;
+      border-top: 1px solid #f0f0f0;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .order-total-label {
+      font-size: 16px;
+      font-weight: 700;
+      color: #222;
+    }
+
+    .order-total-amount {
+      color: #2e7d32;
+      font-size: 18px;
+    }
+
+    .order-footer-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .btn-action {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 8px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-cancel {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .btn-cancel:hover {
+      background: #ffe082;
+    }
+
+    .btn-delete {
+      background: #ffebee;
+      color: #c62828;
+    }
+
+    .btn-delete:hover {
+      background: #ffcdd2;
+    }
+
+    /* ===== ADDRESS BOX ===== */
+    .address-box {
+      margin: 0 20px 16px;
+      padding: 12px 16px;
+      background: #f8fff8;
+      border: 1px solid #c8e6c9;
+      border-radius: 8px;
+      font-size: 13px;
+      color: #555;
+      line-height: 1.7;
+    }
+
+    .address-box strong {
+      color: #2e7d32;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* ===== EMPTY / LOADING ===== */
+    .state-box {
+      text-align: center;
+      padding: 60px 20px;
+      background: #fff;
+      border-radius: 14px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+    }
+
+    .state-box .s-icon {
+      font-size: 60px;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    .state-box h2 {
+      color: #333;
+      margin-bottom: 8px;
+    }
+
+    .state-box p {
+      color: #888;
+      margin-bottom: 20px;
+      font-size: 15px;
+    }
+
+    .btn-shop {
+      display: inline-block;
+      padding: 12px 28px;
+      background: #2e7d32;
+      color: #fff;
+      border-radius: 10px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+
+    .btn-shop:hover {
       background: #1b5e20;
     }
 
-    .btn-danger {
-      background: #d32f2f;
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 4px solid #e0e0e0;
+      border-top-color: #2e7d32;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
     }
 
-    .btn-danger:hover {
-      background: #b71c1c;
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
     }
 
-    .no-orders {
-      text-align: center;
-      padding: 50px;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    }
+    @media (max-width: 500px) {
+      .timeline-step {
+        min-width: 70px;
+      }
 
-    .loading {
-      text-align: center;
-      padding: 50px;
-    }
-
-    .error {
-      color: #d32f2f;
-      background: #ffebee;
-      padding: 15px;
-      border-radius: 5px;
-      margin-bottom: 20px;
-      text-align: center;
+      .step-label {
+        font-size: 10px;
+      }
     }
   </style>
 </head>
+
 <body>
+
   <!-- Navbar -->
   <header class="navbar">
     <div class="logo">🌿 Farmer Medicine Shop</div>
@@ -172,214 +418,201 @@
       <a href="./">Home</a>
       <a href="./about.html">About Us</a>
       <a href="./cart.html">Cart 🛒</a>
-      <a href="./order-history.html" class="active">Orders</a>
+      <a href="./order-history.html" class="active">My Orders</a>
       <a href="./login.html" id="login-link">Login</a>
       <a href="javascript:void(0)" onclick="logoutUser()" id="logout-link" style="display:none;">Logout</a>
     </div>
   </header>
 
-  <div class="orders-container">
-    <h1>My Order History</h1>
+  <div class="orders-page">
+    <h1>📦 My Orders</h1>
 
-    <div id="orders-loading" class="loading">
-      Loading your orders...
-    </div>
-
-    <div id="orders-error" class="error" style="display: none;">
-      Error loading orders. Please try again.
-    </div>
-
-    <div id="orders-list">
-      <!-- Orders will be loaded here -->
-    </div>
-
-    <div id="no-orders" class="no-orders" style="display: none;">
-      <h2>No Orders Yet</h2>
-      <p>You haven't placed any orders yet. Start shopping to see your order history here!</p>
-      <a href="./" class="btn">Start Shopping</a>
+    <div id="orders-container">
+      <!-- Loading spinner -->
+      <div class="state-box" id="loading-box">
+        <div class="spinner"></div>
+        <p>Loading your orders...</p>
+      </div>
     </div>
   </div>
 
+  <footer>
+    <p>© 2025 Farmer Medicine Shop | Designed with ❤️ for Farmers</p>
+  </footer>
+
   <script src="js/config.js"></script>
   <script src="script.js"></script>
+  <script src="js/voiceAssistant.js"></script>
   <script>
-    // Load orders when page loads
-    document.addEventListener('DOMContentLoaded', function() {
+    // ============================================================
+    // ORDER TRACKING STEPS DEFINITION
+    // ============================================================
+    const TRACK_STEPS = [
+      { key: 'Pending', icon: '🛒', label: 'Order\nPlaced' },
+      { key: 'Processing', icon: '📦', label: 'Packing' },
+      { key: 'Shipped', icon: '🚚', label: 'Shipped' },
+      { key: 'OutForDelivery', icon: '🏃', label: 'Out for\nDelivery' },
+      { key: 'Delivered', icon: '✅', label: 'Delivered' },
+    ];
+
+    // Map order status to step index (0-based)
+    const STATUS_STEP = {
+      'Pending': 0,
+      'Processing': 1,
+      'Shipped': 2,
+      'OutForDelivery': 3,
+      'Delivered': 4,
+      'Cancelled': -1
+    };
+
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', () => {
+      updateNavbar();
       if (!isUserLoggedIn()) {
-        alert('Please login to view your order history.');
+        alert('⚠️ Please login to view your orders.');
         window.location.href = 'login.html';
         return;
       }
-
-      loadOrderHistory();
+      loadOrders();
     });
 
-    async function loadOrderHistory() {
-      const loadingDiv = document.getElementById('orders-loading');
-      const errorDiv = document.getElementById('orders-error');
-      const ordersList = document.getElementById('orders-list');
-      const noOrdersDiv = document.getElementById('no-orders');
-
-      loadingDiv.style.display = 'block';
-      errorDiv.style.display = 'none';
-      ordersList.innerHTML = '';
-      noOrdersDiv.style.display = 'none';
-
+    async function loadOrders() {
+      const container = document.getElementById('orders-container');
       try {
-        const data = await apiRequest('/orders/my-orders');
-        const orders = data || [];
+        const orders = await apiRequest('/orders/my-orders');
 
-        loadingDiv.style.display = 'none';
-
-        if (orders.length === 0) {
-          noOrdersDiv.style.display = 'block';
+        if (!orders || orders.length === 0) {
+          container.innerHTML = `
+            <div class="state-box">
+              <span class="s-icon">🛒</span>
+              <h2>No Orders Yet</h2>
+              <p>You haven't placed any orders yet. Start shopping!</p>
+              <a href="./" class="btn-shop">Shop Now</a>
+            </div>`;
           return;
         }
 
-        orders.forEach(order => {
-          const orderCard = createOrderCard(order);
-          ordersList.appendChild(orderCard);
-        });
+        container.innerHTML = '';
+        orders.forEach(order => container.appendChild(buildOrderCard(order)));
 
-      } catch (error) {
-        console.error('Error loading orders:', error);
-        loadingDiv.style.display = 'none';
-        errorDiv.style.display = 'block';
-        errorDiv.textContent = 'Error loading orders: ' + error.message;
+      } catch (err) {
+        container.innerHTML = `
+          <div class="state-box">
+            <span class="s-icon">⚠️</span>
+            <h2>Could not load orders</h2>
+            <p>${err.message}</p>
+            <a href="./" class="btn-shop">Go Home</a>
+          </div>`;
       }
     }
 
-    function createOrderCard(order) {
+    // ---- Build a full order card with tracking timeline ----
+    function buildOrderCard(order) {
       const card = document.createElement('div');
       card.className = 'order-card';
 
-      const orderDate = new Date(order.createdAt).toLocaleDateString('en-IN', {
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
+      const date = new Date(order.createdAt).toLocaleDateString('en-IN', {
+        day: 'numeric', month: 'short', year: 'numeric'
       });
 
-      card.innerHTML = `
-        <div class="order-header">
-          <div>
-            <div class="order-id">Order #${order._id.slice(-8)}</div>
-            <div class="order-date">Placed on ${orderDate}</div>
-          </div>
-          <span class="order-status status-${order.status.toLowerCase()}">${order.status}</span>
-        </div>
+      const statusClass = `badge-${order.status.toLowerCase()}`;
+      const activeStep = STATUS_STEP[order.status] ?? 0;
+      const cancelled = order.status === 'Cancelled';
 
-        <div class="order-body">
-          <div class="order-items">
-            ${order.items.map(item => `
-              <div class="order-item">
-                <div class="item-info">
-                  <img src="${item.image}" alt="${item.name}" class="item-image">
-                  <div class="item-details">
-                    <h4>${item.name}</h4>
-                    <p>Quantity: ${item.quantity} × ₹${item.price}</p>
-                  </div>
+      // ---- Timeline HTML ----
+      const timelineHTML = cancelled
+        ? `<div style="padding:10px 0; color:#c62828; font-weight:600; font-size:14px;">
+             ❌ This order was cancelled.
+           </div>`
+        : TRACK_STEPS.map((step, i) => {
+          const isDone = i < activeStep;
+          const isActive = i === activeStep;
+          const cls = isDone ? 'done' : isActive ? 'active' : '';
+          return `
+              <div class="timeline-step ${cls}">
+                <div class="step-dot">
+                  <span class="step-icon">${isDone ? '✓' : step.icon}</span>
                 </div>
-                <div class="item-total">₹${item.price * item.quantity}</div>
-              </div>
-            `).join('')}
-          </div>
+                <div class="step-label">${step.label.replace('\n', '<br>')}</div>
+                ${isActive ? `<div class="step-date">In Progress</div>` : isDone ? `<div class="step-date">Done</div>` : `<div class="step-date"></div>`}
+              </div>`;
+        }).join('');
 
-          <div class="order-total">
-            Total: ₹${order.totalAmount}
+      // ---- Items HTML ----
+      const itemsHTML = order.items.map(item => `
+        <div class="order-item-row">
+          <img src="${item.image}" alt="${item.name}" class="order-item-img" onerror="this.src='images/placeholder.png'" />
+          <div class="order-item-info">
+            <div class="i-name">${item.name}</div>
+            <div class="i-qty">Qty: ${item.quantity} × ₹${item.price}</div>
           </div>
+          <div class="order-item-price">₹${item.price * item.quantity}</div>
+        </div>`).join('');
 
-          <div class="order-address">
-            <h4>Delivery Address</h4>
-            <p>
-              ${order.shippingAddress.fullName}<br>
-              ${order.shippingAddress.area}<br>
-              ${order.shippingAddress.landmark ? order.shippingAddress.landmark + '<br>' : ''}
-              ${order.shippingAddress.pincode}<br>
-              Phone: ${order.shippingAddress.phone}
-            </p>
+      // ---- Actions ----
+      let actionsHTML = '';
+      if (order.status === 'Pending') {
+        actionsHTML = `<button class="btn-action btn-cancel" onclick="cancelOrder('${order._id}')">Cancel Order</button>`;
+      } else if (order.status === 'Cancelled') {
+        actionsHTML = `<button class="btn-action btn-delete" onclick="deleteOrder('${order._id}')">Delete</button>`;
+      }
+
+      card.innerHTML = `
+        <!-- Header -->
+        <div class="order-header">
+          <div class="order-meta">
+            <div class="order-id">Order #${order._id.slice(-8).toUpperCase()}</div>
+            <div class="order-date">Placed on ${date} &bull; ${order.paymentMethod || 'COD'}</div>
           </div>
+          <span class="order-status-badge ${statusClass}">${order.status}</span>
         </div>
 
-        <div class="order-actions">
-          ${order.status === 'Pending' ?
-            `<button class="btn btn-danger" onclick="cancelOrder('${order._id}')">Cancel Order</button>` :
-            order.status === 'Cancelled' ?
-            `<button class="btn btn-danger" onclick="deleteOrder('${order._id}')">Delete Order</button>` :
-            ''
-          }
-          <button class="btn" onclick="viewOrderDetails('${order._id}')">View Details</button>
+        <!-- Tracking Timeline -->
+        <div class="tracking-section">
+          <h4>📍 Order Tracking</h4>
+          <div class="timeline">${timelineHTML}</div>
+        </div>
+
+        <!-- Delivery Address -->
+        <div class="address-box">
+          <strong>📦 Delivering to:</strong>
+          ${order.shippingAddress.fullName} &bull; ${order.shippingAddress.phone}<br>
+          ${order.shippingAddress.area}${order.shippingAddress.landmark ? ', ' + order.shippingAddress.landmark : ''}, ${order.shippingAddress.pincode}
+        </div>
+
+        <!-- Items -->
+        <div class="order-items-section">${itemsHTML}</div>
+
+        <!-- Footer: Total + Actions -->
+        <div class="order-footer">
+          <div class="order-total-label">
+            Total: <span class="order-total-amount">₹${order.totalAmount}</span>
+          </div>
+          <div class="order-footer-actions">${actionsHTML}</div>
         </div>
       `;
 
       return card;
     }
 
+    // ---- Cancel order ----
     async function cancelOrder(orderId) {
-      if (!confirm('Are you sure you want to cancel this order?')) {
-        return;
-      }
-
+      if (!confirm('Cancel this order?')) return;
       try {
-        await apiRequest(`/orders/${orderId}/cancel`, {
-          method: 'PATCH'
-        });
-
-        alert('Order cancelled successfully!');
-        loadOrderHistory();
-
-      } catch (error) {
-        console.error('Error cancelling order:', error);
-        alert('Error cancelling order: ' + error.message);
-      }
+        await apiRequest(`/orders/${orderId}/cancel`, { method: 'PATCH' });
+        loadOrders();
+      } catch (e) { alert('Error: ' + e.message); }
     }
 
+    // ---- Delete order ----
     async function deleteOrder(orderId) {
-      if (!confirm('Are you sure you want to permanently delete this cancelled order? This action cannot be undone.')) {
-        return;
-      }
-
+      if (!confirm('Permanently delete this cancelled order?')) return;
       try {
-        await apiRequest(`/orders/${orderId}`, {
-          method: 'DELETE'
-        });
-
-        alert('Order deleted successfully!');
-        loadOrderHistory();
-
-      } catch (error) {
-        console.error('Error deleting order:', error);
-        alert('Error deleting order: ' + error.message);
-      }
-    }
-
-    function viewOrderDetails(orderId) {
-      // For now, just show a simple alert with order info
-      // This could be enhanced with a modal
-      apiRequest(`/orders/${orderId}`)
-        .then(order => {
-          const details = `
-Order ID: ${order._id}
-Status: ${order.status}
-Total: ₹${order.totalAmount}
-Payment: ${order.paymentMethod}
-
-Items:
-${order.items.map(item => `- ${item.name} (x${item.quantity}) - ₹${item.price * item.quantity}`).join('\n')}
-
-Shipping Address:
-${order.shippingAddress.fullName}
-${order.shippingAddress.area}
-${order.shippingAddress.landmark || ''}
-${order.shippingAddress.pincode}
-Phone: ${order.shippingAddress.phone}
-          `;
-          alert(details);
-        })
-        .catch(error => {
-          console.error('Error loading order details:', error);
-          alert('Error loading order details');
-        });
+        await apiRequest(`/orders/${orderId}`, { method: 'DELETE' });
+        loadOrders();
+      } catch (e) { alert('Error: ' + e.message); }
     }
   </script>
 </body>
+
 </html>

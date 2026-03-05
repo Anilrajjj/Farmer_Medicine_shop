@@ -13,7 +13,8 @@ let products = []; // Will be loaded from API
 
 // ================== API FUNCTIONS ==================
 async function apiRequest(endpoint, options = {}) {
-  const url = `${API_BASE_URL}${endpoint}`;
+  const baseUrl = window.API_BASE_URL || API_BASE_URL;
+  const url = `${baseUrl}${endpoint}`;
   const config = {
     headers: {
       'Content-Type': 'application/json',
@@ -43,38 +44,52 @@ async function apiRequest(endpoint, options = {}) {
 
 async function loadProducts(category = 'all', search = '', sort = '') {
   try {
-    // Use local products data instead of API
-    let filteredProducts = fallbackProducts.slice(); // Copy the array
+    let endpoint = '/products';
+    const params = new URLSearchParams();
 
-    // Filter by category
+    if (category && category !== 'all') params.append('category', category);
+    if (search) params.append('search', search);
+    if (sort) params.append('sort', sort);
+
+    if (params.toString()) {
+      endpoint += '?' + params.toString();
+    }
+
+    const data = await apiRequest(endpoint);
+
+    if (data && data.products) {
+      products = data.products;
+      renderProducts(products);
+      if (data.pagination) {
+        updatePagination(data.pagination);
+      }
+    } else if (Array.isArray(data)) {
+      products = data;
+      renderProducts(products);
+    } else {
+      throw new Error("Invalid format received from server");
+    }
+  } catch (error) {
+    console.error('Error loading products from API, falling back to local data:', error);
+
+    // Fallback logic
+    let filteredProducts = fallbackProducts.slice();
     if (category && category !== 'all') {
       filteredProducts = filteredProducts.filter(p => p.category === category);
     }
-
-    // Search functionality
     if (search) {
       const regex = new RegExp(search, 'i');
       filteredProducts = filteredProducts.filter(p => regex.test(p.name) || regex.test(p.desc));
     }
-
-    // Sorting
-    if (sort === 'price_asc') {
-      filteredProducts.sort((a, b) => a.price - b.price);
-    } else if (sort === 'price_desc') {
-      filteredProducts.sort((a, b) => b.price - a.price);
-    } else if (sort === 'name_asc') {
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sort === 'name_desc') {
-      filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
-    } else {
-      // Default sort by id
-      filteredProducts.sort((a, b) => a.id - b.id);
-    }
+    if (sort === 'price_asc') filteredProducts.sort((a, b) => a.price - b.price);
+    else if (sort === 'price_desc') filteredProducts.sort((a, b) => b.price - a.price);
+    else if (sort === 'name_asc') filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+    else if (sort === 'name_desc') filteredProducts.sort((a, b) => b.name.localeCompare(a.name));
+    else filteredProducts.sort((a, b) => a.id - b.id);
 
     products = filteredProducts;
     renderProducts(products);
 
-    // Mock pagination
     const pagination = {
       currentPage: 1,
       totalPages: 1,
@@ -83,13 +98,6 @@ async function loadProducts(category = 'all', search = '', sort = '') {
       hasPrev: false
     };
     updatePagination(pagination);
-  } catch (error) {
-    console.error('Error loading products:', error);
-    // Fallback to show error message
-    const grid = document.getElementById("product-grid");
-    if (grid) {
-      grid.innerHTML = "<p>Unable to load products. Please try again later.</p>";
-    }
   }
 }
 
@@ -101,652 +109,660 @@ function updatePagination(pagination) {
 // ================== PRODUCT DATA ==================
 // Keeping a local copy for fallback, but will be replaced by API data
 const fallbackProducts = [
-  { id: 1, 
+  {
+    id: 1,
     name: "Organic Fertilizer",
-     price: 250,
-     image: "images/organic.png", 
-     desc: "Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield.",
-     category: "Fertilizers"
-    },
+    price: 250,
+    image: "images/organic.png",
+    desc: "Eco-friendly fertilizer made from natural compost. Improves soil health and boosts crop yield.",
+    category: "Fertilizers"
+  },
 
-  { id: 2, 
-    name: "Nitrogen Fertilizer", 
-    price: 300, 
-    image: "images/nitrogen.png", 
+  {
+    id: 2,
+    name: "Nitrogen Fertilizer",
+    price: 300,
+    image: "images/nitrogen.png",
     desc: "High-quality nitrogen-based fertilizer to enhance leaf growth and greener crops.",
     category: "Fertilizers"
   },
 
-  { id: 3, 
-    name: "Hybrid Seeds Pack", 
-    price: 150, 
-    image: "images/hybrid.png", 
+  {
+    id: 3,
+    name: "Hybrid Seeds Pack",
+    price: 150,
+    image: "images/hybrid.png",
     desc: "High-yielding hybrid seeds that ensure better germination and crop resilience.",
     category: "Seeds"
   },
 
-  { id: 4, 
-    name: "Wheat Seeds", 
-    price: 180, 
-    image: "images/wheat.png", 
+  {
+    id: 4,
+    name: "Wheat Seeds",
+    price: 180,
+    image: "images/wheat.png",
     desc: "Premium quality wheat seeds for higher yield and resistance to pests.",
     category: "Seeds"
   },
 
-  { id: 5, 
-    name: "Crop Protection Spray", 
-    price: 320, image: "images/spray.png", 
+  {
+    id: 5,
+    name: "Crop Protection Spray",
+    price: 320, image: "images/spray.png",
     desc: "Protects plants from harmful insects and fungal infections. Safe and effective.",
     category: "Pesticides"
   },
 
-  { id: 6, 
-    name: "Insecticide Liquid", 
-    price: 400, 
-    image: "images/insecticide.png", 
+  {
+    id: 6,
+    name: "Insecticide Liquid",
+    price: 400,
+    image: "images/insecticide.png",
     desc: "Powerful insecticide that ensures crop protection against pests and insects.",
     category: "Pesticides"
   },
 
-  { id: 7, 
-    name: "Phosphorus Fertilizer", 
-    price: 600, image: "images/phosphorus.png", 
+  {
+    id: 7,
+    name: "Phosphorus Fertilizer",
+    price: 600, image: "images/phosphorus.png",
     desc: "Boosts root development and enhances flowering and fruiting in crops.",
     category: "Fertilizers"
   },
 
-  { id: 8, 
-    name: "Potassium Fertilizer", 
-    price: 700, 
-    image: "images/potassium.png", 
+  {
+    id: 8,
+    name: "Potassium Fertilizer",
+    price: 700,
+    image: "images/potassium.png",
     desc: "Improves drought resistance and strengthens plant immune system.",
     category: "Fertilizers"
   },
 
   {
-  id: 9,
-  name: "Chlorpyrifos 20 EC",
-  price: 380,
-  image: "images/chlorpyrifos.png",
-  desc: "Broad-spectrum insecticide used to control termites, borers, and sucking pests in crops.",
-  category: "Pesticides"
-},
-
-{
-  id: 10,
-  name: "Bifenthrin 8 SC",
-  price: 420,
-  image: "images/bifenthrin.png",
-  desc: "Effective insecticide for controlling aphids, mites, whiteflies and other crop-damaging insects.",
-  category: "Pesticides"
-},
-
-{
-  id: 11,
-  name: "NPK Fertilizer 10-10-10",
-  price: 450,
-  image: "images/npk.png",
-  desc: "Balanced NPK liquid fertilizer that improves plant growth, root development and crop yield.",
-  category: "Fertilizers"
-},
-
-{
-  id: 12,
-  name: "DAP Fertilizer 18-46-0",
-  price: 1350,
-  image: "images/dap.png",
-  desc: "High phosphorus fertilizer that promotes strong root growth and early plant development.",
-  category: "Fertilizers"
-},
-
-{
-  id: 13,
-  name: "Urea Fertilizer 46-0-0",
-  price: 1200,
-  image: "images/Urea.png",
-  desc: "Nitrogen-rich fertilizer that boosts leaf growth and increases crop productivity.",
-  category: "Fertilizers"
-},
-
-{
-  id: 14,
-  name: "Potash Fertilizer",
-  price: 1250,
-  image: "images/potash.png",
-  desc: "Potassium rich fertilizer that improves crop quality, drought tolerance and disease resistance.",
-  category: "Fertilizers"
-},
-
-{
-  id: 15,
-  name: "Vermicompost Fertilizer",
-  price: 550,
-  image: "images/vermicompost.png",
-  desc: "Organic fertilizer made from earthworms that improves soil fertility and plant growth naturally.",
-  category: "Fertilizers"
-},
-
-{
-  id: 16,
-  name: "Bio Fertilizer Bottle",
-  price: 350,
-  image: "images/biofertilizer.png",
-  desc: "Microbial based fertilizer that enhances nutrient absorption and improves soil health.",
-  category: "Fertilizers"
-},
-
-{
-  id: 17,
-  name: "Liquid Bio Fertilizer",
-  price: 420,
-  image: "images/liquidbio.png",
-  desc: "Liquid bio fertilizer that boosts crop yield and promotes sustainable farming practices.",
-  category: "Fertilizers"
-},
-
-{
-  id: 18,
-  name: "NPK Fertilizer 10-26-26",
-  price: 1250,
-  image: "images/npk102626.png",
-  desc: "High phosphorus NPK fertilizer that promotes strong root growth and flowering in crops.",
-  category: "Fertilizers"
-},
-
-{
-  id: 19,
-  name: "NPK Fertilizer 12-32-16",
-  price: 1300,
-  image: "images/npk123216.png",
-  desc: "Balanced fertilizer ideal for early plant growth and improved crop development.",
-  category: "Fertilizers"
-},
-
-{
-  id: 20,
-  name: "NPK Fertilizer 15-15-15",
-  price: 1400,
-  image: "images/npk151515.png",
-  desc: "All-purpose balanced fertilizer for uniform plant growth and improved yield.",
-  category: "Fertilizers"
-},
-
-{
-  id: 21,
-  name: "NPK Fertilizer 19-19-19",
-  price: 1450,
-  image: "images/npk191919.png",
-  desc: "Water soluble fertilizer that boosts plant growth and improves crop productivity.",
-  category: "Fertilizers"
-},
-
-{
-  id: 22,
-  name: "NPK Fertilizer 20-20-20",
-  price: 1500,
-  image: "images/npk202020.png",
-  desc: "Highly effective fertilizer that provides equal nutrients for fast plant growth.",
-  category: "Fertilizers"
-},
-
-{
-  id: 23,
-  name: "NPK Fertilizer 14-35-14",
-  price: 1350,
-  image: "images/npk143514.png",
-  desc: "Phosphorus rich fertilizer that supports root development and flowering stage.",
-  category: "Fertilizers"
-},
-
-{
-  id: 24,
-  name: "NPK Fertilizer 28-28-0",
-  price: 1550,
-  image: "images/npk282800.png",
-  desc: "Nitrogen and phosphorus rich fertilizer for rapid vegetative growth and strong crops.",
-  category: "Fertilizers"
-},
-
-{
-  id: 25,
-  name: "Tomato Hybrid Seeds",
-  price: 180,
-  image: "images/tomato.png",
-  desc: "High-yield hybrid tomato seeds with excellent germination and disease resistance.",
-  category: "Seeds"
-},
-
-{
-  id: 26,
-  name: "Onion Seeds",
-  price: 160,
-  image: "images/onion.png",
-  desc: "Premium quality onion seeds for uniform bulb size and higher yield.",
-  category: "Seeds"
-},
-
-{
-  id: 27,
-  name: "Chilli Seeds",
-  price: 170,
-  image: "images/chilli.png",
-  desc: "High-quality chilli seeds for spicy, healthy and high-yield crops.",
-  category: "Seeds"
-},
-
-{
-  id: 28,
-  name: "Brinjal (Eggplant) Seeds",
-  price: 165,
-  image: "images/brinjal.png",
-  desc: "Premium brinjal seeds with strong plant growth and improved fruit quality.",
-  category: "Seeds"
-},
-
-{
-  id: 29,
-  name: "Cabbage Seeds",
-  price: 150,
-  image: "images/cabbage.png",
-  desc: "High-quality cabbage seeds for uniform head formation and better yield.",
-  category: "Seeds"
-},
-
-{
-  id: 30,
-  name: "Cauliflower Seeds",
-  price: 155,
-  image: "images/cauliflower.png",
-  desc: "Premium cauliflower seeds with excellent curd quality and disease resistance.",
-  category: "Seeds"
-},
-
-{
-  id: 31,
-  name: "Carrot Seeds",
-  price: 140,
-  image: "images/carrot.png",
-  desc: "High germination carrot seeds for sweet taste and uniform root development.",
-  category: "Seeds"
-},
-
-{
-  id: 32,
-  name: "Beetroot Seeds",
-  price: 145,
-  image: "images/beetroot.png",
-  desc: "Quality beetroot seeds for better color, taste and root growth.",
-  category: "Seeds"
-},
-
-{
-  id: 33,
-  name: "Okra (Lady Finger) Seeds",
-  price: 160,
-  image: "images/okra.png",
-  desc: "High-yield okra seeds with strong plant growth and tender pods.",
-  category: "Seeds"
-},
-
-{
-  id: 34,
-  name: "Paddy (Rice) Seeds",
-  price: 220,
-  image: "images/paddy.png",
-  desc: "High-quality paddy seeds with excellent germination rate and high crop yield.",
-  category: "Seeds"
-},
-
-{
-  id: 35,
-  name: "Maize (Corn) Seeds",
-  price: 210,
-  image: "images/maize.png",
-  desc: "Premium maize seeds for strong plant growth and improved grain production.",
-  category: "Seeds"
-},
-
-{
-  id: 36,
-  name: "Barley Seeds",
-  price: 200,
-  image: "images/barley.png",
-  desc: "High-yield barley seeds suitable for different soil and climate conditions.",
-  category: "Seeds"
-},
-
-{
-  id: 37,
-  name: "Sorghum (Jowar) Seeds",
-  price: 195,
-  image: "images/sorghum.png",
-  desc: "Drought-resistant sorghum seeds for stable production and better crop quality.",
-  category: "Seeds"
-},
-
-{
-  id: 38,
-  name: "Pearl Millet (Bajra) Seeds",
-  price: 190,
-  image: "images/bajra.png",
-  desc: "High-performance bajra seeds suitable for dry land farming and high yield.",
-  category: "Seeds"
-},
-
-{
-  id: 39,
-  name: "Ragi Seeds",
-  price: 180,
-  image: "images/ragi.png",
-  desc: "Nutritious ragi seeds with strong germination and excellent crop performance.",
-  category: "Seeds"
-},
-
-{
-  id: 40,
-  name: "Green Gram (Moong) Seeds",
-  price: 210,
-  image: "images/moong.png",
-  desc: "High-quality moong seeds with excellent germination rate and better crop yield.",
-  category: "Seeds"
-},
-
-{
-  id: 41,
-  name: "Black Gram (Urad) Seeds",
-  price: 205,
-  image: "images/urad.png",
-  desc: "Premium urad seeds suitable for strong plant growth and improved productivity.",
-  category: "Seeds"
-},
-
-{
-  id: 42,
-  name: "Chickpea (Chana) Seeds",
-  price: 230,
-  image: "images/chana.png",
-  desc: "High-yield chickpea seeds with strong disease resistance and uniform growth.",
-  category: "Seeds"
-},
-
-{
-  id: 43,
-  name: "Pigeon Pea (Toor Dal) Seeds",
-  price: 225,
-  image: "images/toor.png",
-  desc: "Quality toor dal seeds for better flowering, pod formation and high yield.",
-  category: "Seeds"
-},
-
-{
-  id: 44,
-  name: "Lentil (Masoor) Seeds",
-  price: 215,
-  image: "images/masoor.png",
-  desc: "Premium masoor seeds with excellent germination and uniform crop growth.",
-  category: "Seeds"
-},
-
-{
-  id: 45,
-  name: "Cowpea Seeds",
-  price: 200,
-  image: "images/cowpea.png",
-  desc: "High-performance cowpea seeds suitable for multiple soil conditions and climates.",
-  category: "Seeds"
-},
-
-{
-  id: 46,
-  name: "Chlorpyrifos 20 EC",
-  price: 380,
-  image: "images/chlorpyrifos.png",
-  desc: "Broad-spectrum insecticide used to control termites, borers and sucking pests.",
-  category: "Pesticides"
-},
-
-{
-  id: 47,
-  name: "Bifenthrin 8 SC",
-  price: 420,
-  image: "images/bifenthrin.png",
-  desc: "Effective insecticide for controlling aphids, mites, whiteflies and crop pests.",
-  category: "Pesticides"
-},
-
-{
-  id: 48,
-  name: "Imidacloprid 17.8 SL",
-  price: 450,
-  image: "images/imidacloprid.png",
-  desc: "Systemic insecticide used to protect crops from sucking insects and termites.",
-  category: "Pesticides"
-},
-
-{
-  id: 49,
-  name: "Cypermethrin 10 EC",
-  price: 410,
-  image: "images/cypermethrin.png",
-  desc: "Fast-acting pesticide for controlling insects in cotton, vegetables and cereals.",
-  category: "Pesticides"
-},
-
-{
-  id: 50,
-  name: "Acephate 75 SP",
-  price: 390,
-  image: "images/acephate.png",
-  desc: "Water soluble insecticide powder effective against leaf miners and caterpillars.",
-  category: "Pesticides"
-},
-
-{
-  id: 51,
-  name: "Lambda Cyhalothrin 5 EC",
-  price: 430,
-  image: "images/lambda.png",
-  desc: "Broad-spectrum insecticide with long-lasting crop protection.",
-  category: "Pesticides"
-},
-
-{
-  id: 52,
-  name: "Thiamethoxam 25 WG",
-  price: 460,
-  image: "images/thiamethoxam.png",
-  desc: "Granular insecticide used to control sucking pests in crops.",
-  category: "Pesticides"
-},
-
-{
-  id: 53,
-  name: "Neem Oil Pesticide",
-  price: 350,
-  image: "images/neem.png",
-  desc: "Organic neem oil pesticide used for eco-friendly pest control.",
-  category: "Pesticides"
-},
-
-{
-  id: 54,
-  name: "Mancozeb Fungicide",
-  price: 400,
-  image: "images/mancozeb.png",
-  desc: "Protective fungicide used to control leaf spots and fungal diseases.",
-  category: "Pesticides"
-},
-
-{
-  id: 55,
-  name: "Carbendazim Fungicide",
-  price: 420,
-  image: "images/carbendazim.png",
-  desc: "Systemic fungicide used to prevent fungal infections in crops.",
-  category: "Pesticides"
-},
-
-{
-  id: 56,
-  name: "Hand Hoe",
-  price: 450,
-  image: "images/handhoe.png",
-  desc: "Durable hand hoe used for loosening soil and removing weeds effectively.",
-  category: "Tools"
-},
-
-{
-  id: 57,
-  name: "Garden Trowel",
-  price: 280,
-  image: "images/trowel.png",
-  desc: "Strong garden trowel suitable for planting, digging and soil mixing.",
-  category: "Tools"
-},
-
-{
-  id: 58,
-  name: "Hand Weeder",
-  price: 320,
-  image: "images/weeder.png",
-  desc: "Efficient hand weeder tool used to remove weeds without damaging crops.",
-  category: "Tools"
-},
-
-{
-  id: 59,
-  name: "Sickle",
-  price: 350,
-  image: "images/sickle.png",
-  desc: "Sharp sickle used for harvesting crops and cutting grass easily.",
-  category: "Tools"
-},
-
-{
-  id: 60,
-  name: "Pruning Shears",
-  price: 550,
-  image: "images/pruningshears.png",
-  desc: "High-quality pruning shears for cutting branches and trimming plants.",
-  category: "Tools"
-},
-
-{
-  id: 61,
-  name: "Hedge Cutter",
-  price: 780,
-  image: "images/hedgecutter.png",
-  desc: "Heavy-duty hedge cutter used for shaping hedges and trimming bushes.",
-  category: "Tools"
-},
-
-{
-  id: 62,
-  name: "Hand Fork",
-  price: 300,
-  image: "images/handfork.png",
-  desc: "Strong hand fork tool used for loosening soil and removing debris.",
-  category: "Tools"
-},
-
-{
-  id: 63,
-  name: "Digging Spade",
-  price: 650,
-  image: "images/spade.png",
-  desc: "Durable digging spade used for soil digging and land preparation.",
-  category: "Tools"
-},
-
-{
-  id: 64,
-  name: "Garden Rake",
-  price: 480,
-  image: "images/rake.png",
-  desc: "Garden rake used for leveling soil and collecting leaves and debris.",
-  category: "Tools"
-},
-
-{
-  id: 65,
-  name: "Khurpi (Traditional Hand Tool)",
-  price: 260,
-  image: "images/khurpi.png",
-  desc: "Traditional khurpi tool used for weeding and soil loosening in farms.",
-  category: "Tools"
-},
-
-{
-  id: 66,
-  name: "Manual Sprayer Pump",
-  price: 1200,
-  image: "images/manualsprayer.png",
-  desc: "Manual pressure sprayer used for pesticide spraying and plant protection.",
-  category: "Tools"
-},
-
-{
-  id: 67,
-  name: "Battery Sprayer",
-  price: 3800,
-  image: "images/batterysprayer.png",
-  desc: "Rechargeable battery sprayer for efficient and effortless crop spraying.",
-  category: "Tools"
-},
-
-{
-  id: 68,
-  name: "Knapsack Sprayer",
-  price: 2200,
-  image: "images/knapsack.png",
-  desc: "Backpack sprayer ideal for uniform pesticide application in farms.",
-  category: "Tools"
-},
-
-{
-  id: 69,
-  name: "Foot Sprayer Pump",
-  price: 1800,
-  image: "images/footsprayer.png",
-  desc: "Foot operated sprayer pump for continuous spraying without electricity.",
-  category: "Tools"
-},
-
-{
-  id: 70,
-  name: "Drip Irrigation Kit",
-  price: 2500,
-  image: "images/dripkit.png",
-  desc: "Water-saving drip irrigation kit for efficient crop watering system.",
-  category: "Tools"
-},
-
-{
-  id: 71,
-  name: "Water Sprinkler Set",
-  price: 1600,
-  image: "images/sprinkler.png",
-  desc: "Automatic sprinkler set for uniform water distribution in fields and gardens.",
-  category: "Tools"
-},
-
-{
-  id: 72,
-  name: "Garden Hose Pipe",
-  price: 950,
-  image: "images/hosepipe.png",
-  desc: "Flexible hose pipe for irrigation and garden watering purposes.",
-  category: "Tools"
-},
-
-{
-  id: 73,
-  name: "Watering Can",
-  price: 450,
-  image: "images/wateringcan.png",
-  desc: "Lightweight watering can for manual watering of plants and seedlings.",
-  category: "Tools"
-}
+    id: 9,
+    name: "Chlorpyrifos 20 EC",
+    price: 380,
+    image: "images/chlorpyrifos.png",
+    desc: "Broad-spectrum insecticide used to control termites, borers, and sucking pests in crops.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 10,
+    name: "Bifenthrin 8 SC",
+    price: 420,
+    image: "images/bifenthrin.png",
+    desc: "Effective insecticide for controlling aphids, mites, whiteflies and other crop-damaging insects.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 11,
+    name: "NPK Fertilizer 10-10-10",
+    price: 450,
+    image: "images/npk.png",
+    desc: "Balanced NPK liquid fertilizer that improves plant growth, root development and crop yield.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 12,
+    name: "DAP Fertilizer 18-46-0",
+    price: 1350,
+    image: "images/dap.png",
+    desc: "High phosphorus fertilizer that promotes strong root growth and early plant development.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 13,
+    name: "Urea Fertilizer 46-0-0",
+    price: 1200,
+    image: "images/Urea.png",
+    desc: "Nitrogen-rich fertilizer that boosts leaf growth and increases crop productivity.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 14,
+    name: "Potash Fertilizer",
+    price: 1250,
+    image: "images/potash.png",
+    desc: "Potassium rich fertilizer that improves crop quality, drought tolerance and disease resistance.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 15,
+    name: "Vermicompost Fertilizer",
+    price: 550,
+    image: "images/vermicompost.png",
+    desc: "Organic fertilizer made from earthworms that improves soil fertility and plant growth naturally.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 16,
+    name: "Bio Fertilizer Bottle",
+    price: 350,
+    image: "images/biofertilizer.png",
+    desc: "Microbial based fertilizer that enhances nutrient absorption and improves soil health.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 17,
+    name: "Liquid Bio Fertilizer",
+    price: 420,
+    image: "images/liquidbio.png",
+    desc: "Liquid bio fertilizer that boosts crop yield and promotes sustainable farming practices.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 18,
+    name: "NPK Fertilizer 10-26-26",
+    price: 1250,
+    image: "images/npk102626.png",
+    desc: "High phosphorus NPK fertilizer that promotes strong root growth and flowering in crops.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 19,
+    name: "NPK Fertilizer 12-32-16",
+    price: 1300,
+    image: "images/npk123216.png",
+    desc: "Balanced fertilizer ideal for early plant growth and improved crop development.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 20,
+    name: "NPK Fertilizer 15-15-15",
+    price: 1400,
+    image: "images/npk151515.png",
+    desc: "All-purpose balanced fertilizer for uniform plant growth and improved yield.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 21,
+    name: "NPK Fertilizer 19-19-19",
+    price: 1450,
+    image: "images/npk191919.png",
+    desc: "Water soluble fertilizer that boosts plant growth and improves crop productivity.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 22,
+    name: "NPK Fertilizer 20-20-20",
+    price: 1500,
+    image: "images/npk202020.png",
+    desc: "Highly effective fertilizer that provides equal nutrients for fast plant growth.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 23,
+    name: "NPK Fertilizer 14-35-14",
+    price: 1350,
+    image: "images/npk143514.png",
+    desc: "Phosphorus rich fertilizer that supports root development and flowering stage.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 24,
+    name: "NPK Fertilizer 28-28-0",
+    price: 1550,
+    image: "images/npk282800.png",
+    desc: "Nitrogen and phosphorus rich fertilizer for rapid vegetative growth and strong crops.",
+    category: "Fertilizers"
+  },
+
+  {
+    id: 25,
+    name: "Tomato Hybrid Seeds",
+    price: 180,
+    image: "images/tomato.png",
+    desc: "High-yield hybrid tomato seeds with excellent germination and disease resistance.",
+    category: "Seeds"
+  },
+
+  {
+    id: 26,
+    name: "Onion Seeds",
+    price: 160,
+    image: "images/onion.png",
+    desc: "Premium quality onion seeds for uniform bulb size and higher yield.",
+    category: "Seeds"
+  },
+
+  {
+    id: 27,
+    name: "Chilli Seeds",
+    price: 170,
+    image: "images/chilli.png",
+    desc: "High-quality chilli seeds for spicy, healthy and high-yield crops.",
+    category: "Seeds"
+  },
+
+  {
+    id: 28,
+    name: "Brinjal (Eggplant) Seeds",
+    price: 165,
+    image: "images/brinjal.png",
+    desc: "Premium brinjal seeds with strong plant growth and improved fruit quality.",
+    category: "Seeds"
+  },
+
+  {
+    id: 29,
+    name: "Cabbage Seeds",
+    price: 150,
+    image: "images/cabbage.png",
+    desc: "High-quality cabbage seeds for uniform head formation and better yield.",
+    category: "Seeds"
+  },
+
+  {
+    id: 30,
+    name: "Cauliflower Seeds",
+    price: 155,
+    image: "images/cauliflower.png",
+    desc: "Premium cauliflower seeds with excellent curd quality and disease resistance.",
+    category: "Seeds"
+  },
+
+  {
+    id: 31,
+    name: "Carrot Seeds",
+    price: 140,
+    image: "images/carrot.png",
+    desc: "High germination carrot seeds for sweet taste and uniform root development.",
+    category: "Seeds"
+  },
+
+  {
+    id: 32,
+    name: "Beetroot Seeds",
+    price: 145,
+    image: "images/beetroot.png",
+    desc: "Quality beetroot seeds for better color, taste and root growth.",
+    category: "Seeds"
+  },
+
+  {
+    id: 33,
+    name: "Okra (Lady Finger) Seeds",
+    price: 160,
+    image: "images/okra.png",
+    desc: "High-yield okra seeds with strong plant growth and tender pods.",
+    category: "Seeds"
+  },
+
+  {
+    id: 34,
+    name: "Paddy (Rice) Seeds",
+    price: 220,
+    image: "images/paddy.png",
+    desc: "High-quality paddy seeds with excellent germination rate and high crop yield.",
+    category: "Seeds"
+  },
+
+  {
+    id: 35,
+    name: "Maize (Corn) Seeds",
+    price: 210,
+    image: "images/maize.png",
+    desc: "Premium maize seeds for strong plant growth and improved grain production.",
+    category: "Seeds"
+  },
+
+  {
+    id: 36,
+    name: "Barley Seeds",
+    price: 200,
+    image: "images/barley.png",
+    desc: "High-yield barley seeds suitable for different soil and climate conditions.",
+    category: "Seeds"
+  },
+
+  {
+    id: 37,
+    name: "Sorghum (Jowar) Seeds",
+    price: 195,
+    image: "images/sorghum.png",
+    desc: "Drought-resistant sorghum seeds for stable production and better crop quality.",
+    category: "Seeds"
+  },
+
+  {
+    id: 38,
+    name: "Pearl Millet (Bajra) Seeds",
+    price: 190,
+    image: "images/bajra.png",
+    desc: "High-performance bajra seeds suitable for dry land farming and high yield.",
+    category: "Seeds"
+  },
+
+  {
+    id: 39,
+    name: "Ragi Seeds",
+    price: 180,
+    image: "images/ragi.png",
+    desc: "Nutritious ragi seeds with strong germination and excellent crop performance.",
+    category: "Seeds"
+  },
+
+  {
+    id: 40,
+    name: "Green Gram (Moong) Seeds",
+    price: 210,
+    image: "images/moong.png",
+    desc: "High-quality moong seeds with excellent germination rate and better crop yield.",
+    category: "Seeds"
+  },
+
+  {
+    id: 41,
+    name: "Black Gram (Urad) Seeds",
+    price: 205,
+    image: "images/urad.png",
+    desc: "Premium urad seeds suitable for strong plant growth and improved productivity.",
+    category: "Seeds"
+  },
+
+  {
+    id: 42,
+    name: "Chickpea (Chana) Seeds",
+    price: 230,
+    image: "images/chana.png",
+    desc: "High-yield chickpea seeds with strong disease resistance and uniform growth.",
+    category: "Seeds"
+  },
+
+  {
+    id: 43,
+    name: "Pigeon Pea (Toor Dal) Seeds",
+    price: 225,
+    image: "images/toor.png",
+    desc: "Quality toor dal seeds for better flowering, pod formation and high yield.",
+    category: "Seeds"
+  },
+
+  {
+    id: 44,
+    name: "Lentil (Masoor) Seeds",
+    price: 215,
+    image: "images/masoor.png",
+    desc: "Premium masoor seeds with excellent germination and uniform crop growth.",
+    category: "Seeds"
+  },
+
+  {
+    id: 45,
+    name: "Cowpea Seeds",
+    price: 200,
+    image: "images/cowpea.png",
+    desc: "High-performance cowpea seeds suitable for multiple soil conditions and climates.",
+    category: "Seeds"
+  },
+
+  {
+    id: 46,
+    name: "Chlorpyrifos 20 EC",
+    price: 380,
+    image: "images/chlorpyrifos.png",
+    desc: "Broad-spectrum insecticide used to control termites, borers and sucking pests.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 47,
+    name: "Bifenthrin 8 SC",
+    price: 420,
+    image: "images/bifenthrin.png",
+    desc: "Effective insecticide for controlling aphids, mites, whiteflies and crop pests.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 48,
+    name: "Imidacloprid 17.8 SL",
+    price: 450,
+    image: "images/imidacloprid.png",
+    desc: "Systemic insecticide used to protect crops from sucking insects and termites.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 49,
+    name: "Cypermethrin 10 EC",
+    price: 410,
+    image: "images/cypermethrin.png",
+    desc: "Fast-acting pesticide for controlling insects in cotton, vegetables and cereals.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 50,
+    name: "Acephate 75 SP",
+    price: 390,
+    image: "images/acephate.png",
+    desc: "Water soluble insecticide powder effective against leaf miners and caterpillars.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 51,
+    name: "Lambda Cyhalothrin 5 EC",
+    price: 430,
+    image: "images/lambda.png",
+    desc: "Broad-spectrum insecticide with long-lasting crop protection.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 52,
+    name: "Thiamethoxam 25 WG",
+    price: 460,
+    image: "images/thiamethoxam.png",
+    desc: "Granular insecticide used to control sucking pests in crops.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 53,
+    name: "Neem Oil Pesticide",
+    price: 350,
+    image: "images/neem.png",
+    desc: "Organic neem oil pesticide used for eco-friendly pest control.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 54,
+    name: "Mancozeb Fungicide",
+    price: 400,
+    image: "images/mancozeb.png",
+    desc: "Protective fungicide used to control leaf spots and fungal diseases.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 55,
+    name: "Carbendazim Fungicide",
+    price: 420,
+    image: "images/carbendazim.png",
+    desc: "Systemic fungicide used to prevent fungal infections in crops.",
+    category: "Pesticides"
+  },
+
+  {
+    id: 56,
+    name: "Hand Hoe",
+    price: 450,
+    image: "images/handhoe.png",
+    desc: "Durable hand hoe used for loosening soil and removing weeds effectively.",
+    category: "Tools"
+  },
+
+  {
+    id: 57,
+    name: "Garden Trowel",
+    price: 280,
+    image: "images/trowel.png",
+    desc: "Strong garden trowel suitable for planting, digging and soil mixing.",
+    category: "Tools"
+  },
+
+  {
+    id: 58,
+    name: "Hand Weeder",
+    price: 320,
+    image: "images/weeder.png",
+    desc: "Efficient hand weeder tool used to remove weeds without damaging crops.",
+    category: "Tools"
+  },
+
+  {
+    id: 59,
+    name: "Sickle",
+    price: 350,
+    image: "images/sickle.png",
+    desc: "Sharp sickle used for harvesting crops and cutting grass easily.",
+    category: "Tools"
+  },
+
+  {
+    id: 60,
+    name: "Pruning Shears",
+    price: 550,
+    image: "images/pruningshears.png",
+    desc: "High-quality pruning shears for cutting branches and trimming plants.",
+    category: "Tools"
+  },
+
+  {
+    id: 61,
+    name: "Hedge Cutter",
+    price: 780,
+    image: "images/hedgecutter.png",
+    desc: "Heavy-duty hedge cutter used for shaping hedges and trimming bushes.",
+    category: "Tools"
+  },
+
+  {
+    id: 62,
+    name: "Hand Fork",
+    price: 300,
+    image: "images/handfork.png",
+    desc: "Strong hand fork tool used for loosening soil and removing debris.",
+    category: "Tools"
+  },
+
+  {
+    id: 63,
+    name: "Digging Spade",
+    price: 650,
+    image: "images/spade.png",
+    desc: "Durable digging spade used for soil digging and land preparation.",
+    category: "Tools"
+  },
+
+  {
+    id: 64,
+    name: "Garden Rake",
+    price: 480,
+    image: "images/rake.png",
+    desc: "Garden rake used for leveling soil and collecting leaves and debris.",
+    category: "Tools"
+  },
+
+  {
+    id: 65,
+    name: "Khurpi (Traditional Hand Tool)",
+    price: 260,
+    image: "images/khurpi.png",
+    desc: "Traditional khurpi tool used for weeding and soil loosening in farms.",
+    category: "Tools"
+  },
+
+  {
+    id: 66,
+    name: "Manual Sprayer Pump",
+    price: 1200,
+    image: "images/manualsprayer.png",
+    desc: "Manual pressure sprayer used for pesticide spraying and plant protection.",
+    category: "Tools"
+  },
+
+  {
+    id: 67,
+    name: "Battery Sprayer",
+    price: 3800,
+    image: "images/batterysprayer.png",
+    desc: "Rechargeable battery sprayer for efficient and effortless crop spraying.",
+    category: "Tools"
+  },
+
+  {
+    id: 68,
+    name: "Knapsack Sprayer",
+    price: 2200,
+    image: "images/knapsack.png",
+    desc: "Backpack sprayer ideal for uniform pesticide application in farms.",
+    category: "Tools"
+  },
+
+  {
+    id: 69,
+    name: "Foot Sprayer Pump",
+    price: 1800,
+    image: "images/footsprayer.png",
+    desc: "Foot operated sprayer pump for continuous spraying without electricity.",
+    category: "Tools"
+  },
+
+  {
+    id: 70,
+    name: "Drip Irrigation Kit",
+    price: 2500,
+    image: "images/dripkit.png",
+    desc: "Water-saving drip irrigation kit for efficient crop watering system.",
+    category: "Tools"
+  },
+
+  {
+    id: 71,
+    name: "Water Sprinkler Set",
+    price: 1600,
+    image: "images/sprinkler.png",
+    desc: "Automatic sprinkler set for uniform water distribution in fields and gardens.",
+    category: "Tools"
+  },
+
+  {
+    id: 72,
+    name: "Garden Hose Pipe",
+    price: 950,
+    image: "images/hosepipe.png",
+    desc: "Flexible hose pipe for irrigation and garden watering purposes.",
+    category: "Tools"
+  },
+
+  {
+    id: 73,
+    name: "Watering Can",
+    price: 450,
+    image: "images/wateringcan.png",
+    desc: "Lightweight watering can for manual watering of plants and seedlings.",
+    category: "Tools"
+  }
 
 
 
@@ -816,86 +832,44 @@ async function signupUser(userData) {
   }
 }
 
-// FIREBASE OTP FUNCTIONS
-let confirmationResult = null;
-
-async function sendOTP(phoneNumber) {
+// ================== GOOGLE SIGN-IN ==================
+async function signInWithGoogle() {
   try {
-    // Format phone number with country code if not present
-    if (!phoneNumber.startsWith('+')) {
-      phoneNumber = '+91' + phoneNumber.replace(/\D/g, '');
+    if (!window.firebaseAuth) {
+      alert("Google Sign-In not available. Please try email login.");
+      return;
     }
+    const provider = new firebase.auth.GoogleAuthProvider();
+    provider.addScope('email');
+    provider.addScope('profile');
 
-    // Send OTP using Firebase
-    confirmationResult = await window.firebaseAuth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier);
-    
-    // Show OTP input step
-    document.getElementById("phoneStep1").style.display = "none";
-    document.getElementById("phoneStep2").style.display = "block";
-    
-    alert("OTP sent to your phone number");
-  } catch (error) {
-    console.error("Error sending OTP:", error);
-    alert("Failed to send OTP: " + error.message);
-  }
-}
-
-async function verifyOTP(otpCode) {
-  try {
-    const result = await confirmationResult.confirm(otpCode);
+    const result = await window.firebaseAuth.signInWithPopup(provider);
     const user = result.user;
-    
-    // Get user data from Firebase
-    const phoneNumber = user.phoneNumber;
-    
-    // Check if user exists in our backend, if not create account
-    try {
-      const response = await apiRequest('/auth/firebase-login', {
-        method: "POST",
-        body: JSON.stringify({ 
-          phoneNumber: phoneNumber,
-          firebaseUID: user.uid 
-        }),
-      });
 
-      // Store authentication data
-      authToken = response.token;
-      currentUser = response.user;
-      localStorage.setItem('authToken', authToken);
-      localStorage.setItem('currentUser', JSON.stringify(currentUser));
-      localStorage.setItem("isLoggedIn", "true");
+    // Send to backend to create/login user
+    const response = await apiRequest('/auth/google-login', {
+      method: "POST",
+      body: JSON.stringify({
+        googleUID: user.uid,
+        email: user.email,
+        firstName: user.displayName ? user.displayName.split(' ')[0] : 'User',
+        lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+        photoURL: user.photoURL
+      }),
+    });
 
-      updateNavbar();
-      window.location.href = "index.html";
-    } catch (backendError) {
-      // If user doesn't exist in backend, redirect to signup
-      alert("Phone number not registered. Please sign up first.");
-      window.location.href = "signup.html";
-    }
+    authToken = response.token;
+    currentUser = response.user;
+    localStorage.setItem('authToken', authToken);
+    localStorage.setItem('currentUser', JSON.stringify(currentUser));
+    localStorage.setItem("isLoggedIn", "true");
+
+    updateNavbar();
+    window.location.href = "index.html";
   } catch (error) {
-    console.error("Error verifying OTP:", error);
-    alert("Invalid OTP. Please try again.");
-  }
-}
-
-// Initialize reCAPTCHA when Firebase is loaded (login/phone-OTP)
-function initializeRecaptcha() {
-  if (typeof window.firebaseAuth !== 'undefined' && typeof window.RecaptchaVerifier !== 'undefined') {
-    try {
-      window.recaptchaVerifier = new window.RecaptchaVerifier('recaptcha-container', {
-        size: 'invisible',
-        callback: function(response) {
-          console.log("reCAPTCHA solved");
-        },
-        'expired-callback': function() {
-          console.log("reCAPTCHA expired");
-        }
-      }, window.firebaseAuth);
-    } catch (error) {
-      console.error("Error initializing reCAPTCHA on login page:", error);
-    }
-  } else {
-    console.warn("Firebase Auth or RecaptchaVerifier not available yet for login page.");
+    console.error("Google Sign-In error:", error);
+    if (error.code === 'auth/popup-closed-by-user') return;
+    alert("Google Sign-In failed: " + error.message);
   }
 }
 
@@ -1096,36 +1070,37 @@ function isUserLoggedIn() {
 }
 
 function updateNavbar() {
-  const loginLink = document.getElementById("login-link");
-  const logoutLink = document.getElementById("logout-link");
-  const ordersLink = document.getElementById("orders-link");
-  const adminLink = document.getElementById("admin-link");
+  const loggedIn = !!(currentUser && authToken);
+  const isAdmin = loggedIn && currentUser.role === 'admin';
 
-  if (!loginLink || !logoutLink) return;
+  // Desktop nav
+  const loginLink = document.getElementById('login-link');
+  const logoutLink = document.getElementById('logout-link');
+  const ordersLink = document.getElementById('orders-link');
+  const adminLink = document.getElementById('admin-link');
+  if (loginLink) loginLink.style.display = loggedIn ? 'none' : 'inline';
+  if (logoutLink) { logoutLink.style.display = loggedIn ? 'inline' : 'none'; logoutLink.onclick = logoutUser; }
+  if (ordersLink) ordersLink.style.display = loggedIn ? 'inline' : 'none';
+  if (adminLink) adminLink.style.display = isAdmin ? 'inline' : 'none';
 
-  if (currentUser && authToken) {
-    loginLink.style.display = "none";
-    logoutLink.style.display = "inline";
-    logoutLink.onclick = logoutUser;
-
-    // Show orders link for all logged-in users
-    if (ordersLink) ordersLink.style.display = "inline";
-
-    // Show admin link only for admin users
-    if (adminLink) {
-      adminLink.style.display = currentUser.role === 'admin' ? "inline" : "none";
-    }
-  } else {
-    loginLink.style.display = "inline";
-    logoutLink.style.display = "none";
-    if (ordersLink) ordersLink.style.display = "none";
-    if (adminLink) adminLink.style.display = "none";
-  }
+  // Mobile nav drawer links (prefixed with m-)
+  const mLoginLink = document.getElementById('m-login-link');
+  const mLogoutLink = document.getElementById('m-logout-link');
+  const mOrdersLink = document.getElementById('m-orders-link');
+  const mAdminLink = document.getElementById('m-admin-link');
+  if (mLoginLink) mLoginLink.style.display = loggedIn ? 'none' : 'block';
+  if (mLogoutLink) mLogoutLink.style.display = loggedIn ? 'block' : 'none';
+  if (mOrdersLink) mOrdersLink.style.display = loggedIn ? 'block' : 'none';
+  if (mAdminLink) mAdminLink.style.display = isAdmin ? 'block' : 'none';
 }
 
 // ================== PRODUCT RENDERING ==================
+let currentCategory = 'all';
+let currentSearch = '';
+
 function filterProducts(category) {
-  loadProducts(category);
+  currentCategory = category;
+  loadProducts(currentCategory, currentSearch);
 }
 
 function renderProducts(productList = products) {
@@ -1135,7 +1110,13 @@ function renderProducts(productList = products) {
   grid.innerHTML = "";
 
   if (productList.length === 0) {
-    grid.innerHTML = "<p>No products found.</p>";
+    const searchTerm = currentSearch ? `"${currentSearch}"` : '';
+    grid.innerHTML = `
+      <div class="no-results">
+        <span class="no-results-icon">🌾</span>
+        <h3>No products found${searchTerm ? ' for ' + searchTerm : ''}</h3>
+        <p>${searchTerm ? 'Try a different keyword or clear the search.' : 'No products available in this category.'}</p>
+      </div>`;
     return;
   }
 
@@ -1143,17 +1124,39 @@ function renderProducts(productList = products) {
     const card = document.createElement("div");
     card.classList.add("product-card");
 
-    // Handle both API format (_id, description) and local format (id, desc)
     const productId = p._id || p.id;
-    const productDesc = p.description || p.desc;
+    const productDesc = p.description || p.desc || '';
+    const stock = p.stock ?? 999;
+    const outOfStock = stock === 0;
+    const lowStock = stock > 0 && stock <= 10;
+    const stockBadgeClass = outOfStock ? 'out-stock' : lowStock ? 'low-stock' : 'in-stock';
+    const stockBadgeText = outOfStock ? 'Out of Stock' : lowStock ? `Only ${stock} left` : 'In Stock';
 
     card.innerHTML = `
-      <img src="${p.image}" alt="${p.name}">
-      <h3>${p.name}</h3>
-      <p class="desc">${productDesc}</p>
-      <p class="price">₹${p.price}</p>
-      <button onclick="addToCart('${productId}')">Add to Cart</button>
+      <div class="product-card-img-wrap">
+        <img src="${p.image}" alt="${p.name}" onerror="this.src='images/placeholder.png'" />
+        <span class="stock-badge ${stockBadgeClass}">${stockBadgeText}</span>
+      </div>
+      <div class="product-card-body">
+        <span class="product-cat-tag">${p.category || ''}</span>
+        <h3>${p.name}</h3>
+        <p class="product-desc">${productDesc}</p>
+        <div class="product-price-row">
+          <span class="product-price">₹${Number(p.price).toLocaleString('en-IN')}</span>
+          <span class="product-price-unit">/ unit</span>
+        </div>
+      </div>
+      <div class="product-card-actions">
+        <button class="btn-add-cart" onclick="event.stopPropagation();addToCart('${productId}')" ${outOfStock ? 'disabled' : ''}>
+          ${outOfStock ? 'Out of Stock' : '+ Add to Cart'}
+        </button>
+        <button class="btn-view-details" onclick="event.stopPropagation();window.location.href='product-detail.html?id=${productId}'">Details</button>
+      </div>
     `;
+
+    card.addEventListener('click', () => {
+      window.location.href = `product-detail.html?id=${productId}`;
+    });
 
     grid.appendChild(card);
   });
@@ -1178,63 +1181,10 @@ document.addEventListener("DOMContentLoaded", function () {
     });
   }
 
-  // Login tabs functionality
-  const emailTab = document.getElementById("emailTab");
-  const phoneTab = document.getElementById("phoneTab");
-  const emailForm = document.getElementById("loginForm");
-  const phoneForm = document.getElementById("phoneForm");
-
-  if (emailTab && phoneTab) {
-    emailTab.addEventListener("click", function() {
-      emailTab.classList.add("active");
-      phoneTab.classList.remove("active");
-      emailForm.classList.add("active");
-      phoneForm.classList.remove("active");
-    });
-
-    phoneTab.addEventListener("click", function() {
-      phoneTab.classList.add("active");
-      emailTab.classList.remove("active");
-      phoneForm.classList.add("active");
-      emailForm.classList.remove("active");
-    });
-  }
-
-  // Phone OTP functionality (login page only)
-  const sendOtpBtn = document.getElementById("sendOtpBtn");
-  const verifyOtpBtn = document.getElementById("verifyOtpBtn");
-  const backToPhoneBtn = document.getElementById("backToPhoneBtn");
-  const phoneStep1 = document.getElementById("phoneStep1");
-  const phoneStep2 = document.getElementById("phoneStep2");
-
-  // Guard with phoneForm so this does not run on pages like verify-phone.html
-  if (sendOtpBtn && phoneForm) {
-    sendOtpBtn.addEventListener("click", function() {
-      const phoneNumber = document.getElementById("phoneNumber").value.trim();
-      if (phoneNumber) {
-        sendOTP(phoneNumber);
-      } else {
-        alert("Please enter a valid phone number");
-      }
-    });
-  }
-
-  if (verifyOtpBtn) {
-    verifyOtpBtn.addEventListener("click", function() {
-      const otpCode = document.getElementById("otpCode").value.trim();
-      if (otpCode && otpCode.length === 6) {
-        verifyOTP(otpCode);
-      } else {
-        alert("Please enter a valid 6-digit OTP");
-      }
-    });
-  }
-
-  if (backToPhoneBtn) {
-    backToPhoneBtn.addEventListener("click", function() {
-      phoneStep1.style.display = "block";
-      phoneStep2.style.display = "none";
-    });
+  // Google Sign-In button
+  const googleBtn = document.getElementById("googleSignInBtn");
+  if (googleBtn) {
+    googleBtn.addEventListener("click", signInWithGoogle);
   }
 
   // Signup form
@@ -1279,11 +1229,15 @@ document.addEventListener("DOMContentLoaded", function () {
         password
       };
 
-      // Store signup data temporarily in sessionStorage
-      sessionStorage.setItem('pendingSignupData', JSON.stringify(signupData));
+      // Validate password strength
+      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+      if (!passwordRegex.test(password)) {
+        alert("⚠️ Password must be at least 8 characters and include uppercase, lowercase, number and special character (@$!%*?&).");
+        return;
+      }
 
-      // Redirect to verify phone page
-      window.location.href = "verify-phone.html";
+      // Submit directly to backend
+      signupUser(signupData);
     });
   }
 
@@ -1434,339 +1388,54 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   }
 
+  // ================== SEARCH BAR ==================
+  const searchInput = document.getElementById('search-input');
+  const clearSearchBtn = document.getElementById('clear-search-btn');
+
+  if (searchInput) {
+    let debounceTimer;
+
+    searchInput.addEventListener('input', function () {
+      currentSearch = this.value.trim();
+
+      // Show/hide the clear button
+      clearSearchBtn.style.display = currentSearch ? 'flex' : 'none';
+
+      // Debounce: wait 400ms after the user stops typing
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        loadProducts(currentCategory, currentSearch);
+      }, 400);
+    });
+
+    clearSearchBtn.addEventListener('click', function () {
+      searchInput.value = '';
+      currentSearch = '';
+      clearSearchBtn.style.display = 'none';
+      searchInput.focus();
+      loadProducts(currentCategory, '');
+    });
+  }
+
   // ================== CATEGORY FILTERING ==================
   const categoryButtons = document.querySelectorAll('.category-btn');
   categoryButtons.forEach(button => {
-    button.addEventListener('click', function() {
+    button.addEventListener('click', function () {
       // Remove active class from all buttons
       categoryButtons.forEach(btn => btn.classList.remove('active'));
       // Add active class to clicked button
       this.classList.add('active');
-      
+
       const category = this.getAttribute('data-category');
       filterProducts(category);
     });
   });
 
-  // ================== VERIFY PHONE PAGE LOGIC ==================
-  // Handle verify phone page
-  if (document.getElementById('verify-phone')) {
-    let confirmationResult = null;
-    let resendTimer = null;
-    let countdown = 30;
-
-    // Load pending signup data
-    const pendingData = sessionStorage.getItem('pendingSignupData');
-    if (!pendingData) {
-      alert("No signup data found. Please start the signup process again.");
-      window.location.href = "signup.html";
-      return;
-    }
-
-    const signupData = JSON.parse(pendingData);
-
-    // Validate signup data
-    if (!signupData.firstName || !signupData.lastName || !signupData.mobileNumber || !signupData.email || !signupData.password) {
-      alert("Invalid signup data. Please start the signup process again.");
-      sessionStorage.removeItem('pendingSignupData');
-      window.location.href = "signup.html";
-      return;
-    }
-
-    document.getElementById('displayPhone').textContent = '+91' + signupData.mobileNumber;
-
-    // Initialize reCAPTCHA
-    function initializeRecaptcha() {
-      console.log("Initializing reCAPTCHA...");
-      console.log("window.firebaseAuth:", typeof window.firebaseAuth);
-      console.log("window.RecaptchaVerifier:", typeof window.RecaptchaVerifier);
-
-      if (typeof window.firebaseAuth !== 'undefined' && typeof window.RecaptchaVerifier !== 'undefined') {
-        try {
-          window.recaptchaVerifier = new window.RecaptchaVerifier('recaptcha-container', {
-            size: 'invisible',
-            callback: function(response) {
-              console.log("reCAPTCHA solved");
-            },
-            'expired-callback': function() {
-              console.log("reCAPTCHA expired");
-              showError("reCAPTCHA expired. Please refresh the page.");
-            }
-          }, window.firebaseAuth);
-          console.log("reCAPTCHA initialized successfully");
-        } catch (error) {
-          console.error("Error initializing reCAPTCHA:", error);
-        }
-      } else {
-        console.log("Firebase not available for reCAPTCHA initialization");
-      }
-    }
-
-    // Send OTP function
-    async function sendOTP() {
-      try {
-        console.log("Starting sendOTP...");
-        console.log("window.firebaseAuth:", typeof window.firebaseAuth);
-        console.log("window.recaptchaVerifier:", typeof window.recaptchaVerifier);
-
-        // Check if Firebase is loaded
-        if (typeof window.firebaseAuth === 'undefined') {
-          showError("Firebase not loaded. Please refresh the page and try again.");
-          console.error("window.firebaseAuth is undefined");
-          return;
-        }
-
-        console.log("Firebase auth available:", !!window.firebaseAuth);
-
-        showError(""); // Clear previous errors
-        showSuccess(""); // Clear previous success
-
-        const phoneNumber = '+91' + signupData.mobileNumber.replace(/\D/g, ''); // Remove any non-digits
-        console.log("Original phone from signup:", signupData.mobileNumber);
-        console.log("Formatted phone number:", phoneNumber);
-
-        if (!window.recaptchaVerifier) {
-          console.log("Initializing reCAPTCHA in sendOTP...");
-          initializeRecaptcha();
-          
-          // Wait a bit for reCAPTCHA to initialize
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-
-        // If still not initialized, don't call Firebase (prevents 'undefined.verify' errors)
-        if (!window.recaptchaVerifier) {
-          console.error("reCAPTCHA verifier is still undefined after initialization attempt.");
-          showError("Unable to initialize reCAPTCHA. Please check Firebase API key/configuration or contact support.");
-          return;
-        }
-
-        console.log("Sending OTP...");
-        // Send OTP using Firebase
-        confirmationResult = await window.firebaseAuth.signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier);
-
-        console.log("OTP sent successfully");
-        // Show OTP input section
-        document.getElementById('sendOtpSection').style.display = 'none';
-        document.getElementById('otpSection').style.display = 'block';
-
-        showSuccess("OTP sent successfully!");
-        startResendTimer();
-
-        // Focus on first OTP input
-        document.getElementById('otp1').focus();
-
-      } catch (error) {
-        console.error("Error sending OTP:", error);
-        console.error("Error code:", error.code);
-        console.error("Error message:", error.message);
-
-        // Default message if we don't match a specific error code
-        let errorMessage = "Failed to send OTP. Please try again.";
-
-        if (error.code === 'auth/invalid-phone-number') {
-          errorMessage = "Invalid phone number format.";
-        } else if (error.code === 'auth/too-many-requests') {
-          errorMessage = "Too many requests. Please try again later.";
-        } else if (error.code === 'auth/captcha-check-failed') {
-          errorMessage = "reCAPTCHA verification failed. Please refresh the page.";
-        } else if (error.code === 'auth/missing-recaptcha-token') {
-          errorMessage = "reCAPTCHA not initialized. Please refresh the page.";
-        } else if (error.code === 'auth/invalid-app-credential') {
-          errorMessage = "Firebase configuration error. Please contact support.";
-        }
-
-        showError(errorMessage);
-      }
-    }
-
-    // Verify OTP function
-    async function verifyOTP(otpCode) {
-      try {
-        showError(""); // Clear previous errors
-
-        if (!confirmationResult) {
-          showError("Please send OTP first.");
-          return;
-        }
-
-        const result = await confirmationResult.confirm(otpCode);
-        const user = result.user;
-
-        // Phone verified successfully, now complete signup
-        await completeSignup(user.uid);
-
-      } catch (error) {
-        console.error("Error verifying OTP:", error);
-        let errorMessage = "Invalid OTP. Please try again.";
-
-        if (error.code === 'auth/invalid-verification-code') {
-          errorMessage = "Invalid OTP code.";
-        } else if (error.code === 'auth/code-expired') {
-          errorMessage = "OTP has expired. Please request a new one.";
-        } else if (error.code === 'auth/too-many-requests') {
-          errorMessage = "Too many failed attempts. Please try again later.";
-        }
-
-        showError(errorMessage);
-      }
-    }
-
-    // Complete signup after phone verification
-    async function completeSignup(firebaseUID) {
-      try {
-        // Add Firebase UID to signup data
-        const completeSignupData = {
-          ...signupData,
-          firebaseUID: firebaseUID,
-          phoneVerified: true
-        };
-
-        // Call signup API
-        const response = await apiRequest('/auth/signup', {
-          method: "POST",
-          body: JSON.stringify(completeSignupData),
-        });
-
-        // Clear pending data
-        sessionStorage.removeItem('pendingSignupData');
-
-        // Store authentication data
-        authToken = response.token;
-        currentUser = response.user;
-        localStorage.setItem('authToken', authToken);
-        localStorage.setItem('currentUser', JSON.stringify(currentUser));
-        localStorage.setItem("isLoggedIn", "true");
-
-        showSuccess("Account created successfully! Redirecting to login...");
-
-        // Redirect to login after short delay
-        setTimeout(() => {
-          window.location.href = "login.html";
-        }, 2000);
-
-      } catch (error) {
-        console.error("Error completing signup:", error);
-        showError("Failed to create account. Please try again.");
-      }
-    }
-
-    // Timer functions
-    function startResendTimer() {
-      countdown = 30;
-      document.getElementById('resendText').style.display = 'none';
-      document.getElementById('timerText').style.display = 'block';
-      document.getElementById('countdown').textContent = countdown;
-
-      resendTimer = setInterval(() => {
-        countdown--;
-        document.getElementById('countdown').textContent = countdown;
-
-        if (countdown <= 0) {
-          clearInterval(resendTimer);
-          document.getElementById('timerText').style.display = 'none';
-          document.getElementById('resendText').style.display = 'block';
-          document.getElementById('resendLink').classList.remove('disabled');
-        }
-      }, 1000);
-    }
-
-    // Utility functions
-    function showError(message) {
-      const errorDiv = document.getElementById('errorMessage');
-      const successDiv = document.getElementById('successMessage');
-
-      if (message) {
-        errorDiv.textContent = message;
-        errorDiv.style.display = 'block';
-        successDiv.style.display = 'none';
-      } else {
-        errorDiv.style.display = 'none';
-      }
-    }
-
-    function showSuccess(message) {
-      const errorDiv = document.getElementById('errorMessage');
-      const successDiv = document.getElementById('successMessage');
-
-      if (message) {
-        successDiv.textContent = message;
-        successDiv.style.display = 'block';
-        errorDiv.style.display = 'none';
-      } else {
-        successDiv.style.display = 'none';
-      }
-    }
-
-    // Event listeners
-    document.getElementById('sendOtpBtn').addEventListener('click', sendOTP);
-
-    document.getElementById('verifyOtpBtn').addEventListener('click', function() {
-      const otpInputs = ['otp1', 'otp2', 'otp3', 'otp4', 'otp5', 'otp6'];
-      const otpCode = otpInputs.map(id => document.getElementById(id).value).join('');
-
-      if (otpCode.length !== 6) {
-        showError("Please enter all 6 digits of the OTP.");
-        return;
-      }
-
-      verifyOTP(otpCode);
-    });
-
-    document.getElementById('changePhoneBtn').addEventListener('click', function() {
-      sessionStorage.removeItem('pendingSignupData');
-      window.location.href = "signup.html";
-    });
-
-    document.getElementById('backToSignupBtn').addEventListener('click', function() {
-      sessionStorage.removeItem('pendingSignupData');
-      window.location.href = "signup.html";
-    });
-
-    document.getElementById('resendLink').addEventListener('click', function() {
-      if (!this.classList.contains('disabled')) {
-        sendOTP();
-      }
-    });
-
-    // OTP input handling - auto focus next input
-    const otpInputs = document.querySelectorAll('#otpSection input[type="text"]');
-    otpInputs.forEach((input, index) => {
-      input.addEventListener('input', function() {
-        if (this.value.length === 1 && index < otpInputs.length - 1) {
-          otpInputs[index + 1].focus();
-        }
-      });
-
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Backspace' && this.value.length === 0 && index > 0) {
-          otpInputs[index - 1].focus();
-        }
-      });
-    });
-
-    // Initialize reCAPTCHA when Firebase is loaded
-    function waitForFirebase() {
-      if (typeof window.firebaseAuth !== 'undefined' && typeof window.RecaptchaVerifier !== 'undefined') {
-        initializeRecaptcha();
-      } else {
-        // Wait for Firebase to load
-        setTimeout(waitForFirebase, 500);
-      }
-    }
-
-    waitForFirebase();
-  }
-
   // ================== INITIALIZE ==================
   console.log("Script loaded successfully");
   console.log("API_ENDPOINTS:", API_ENDPOINTS);
-  
+
   loadProducts('all'); // Load all products initially
   renderCart();
   updateNavbar();
-
-  // Initialize Firebase reCAPTCHA if on login page
-  if (document.getElementById('recaptcha-container')) {
-    initializeRecaptcha();
-  }
 });
