@@ -54,7 +54,10 @@ function getTransporter() {
 // ─── Helper to send a mail (swallows errors so it never breaks the API) ───────
 async function sendMail(to, subject, html) {
   const resendApiKey = process.env.RESEND_API_KEY;
-  const fromAddress = process.env.EMAIL_FROM || `"Farmer Medicine Shop" <${process.env.EMAIL_USER}>`;
+  const rawFrom = process.env.EMAIL_FROM || `"Farmer Medicine Shop" <${process.env.EMAIL_USER}>`;
+  const fromAddress = String(rawFrom)
+    .trim()
+    .replace(/^['"]+|['"]+$/g, "") || "onboarding@resend.dev";
 
   if (resendApiKey) {
     try {
