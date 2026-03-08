@@ -1,0 +1,12 @@
+User-agent: *
+Allow: /
+
+# Disallow admin and user-specific pages
+Disallow: /admin.html
+Disallow: /cart.html
+Disallow: /checkout.html
+Disallow: /order-history.html
+Disallow: /verify-phone.html
+
+# Note: Once you have a live domain (like Render), replace the URL below
+# Sitemap: https://your-domain.com/sitemap.xml
