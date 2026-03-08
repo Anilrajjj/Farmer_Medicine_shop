@@ -36,6 +36,18 @@ const UserSchema = new mongoose.Schema({
     pincode: { type: String }
   },
 
+  savedAddresses: [{
+    fullName: String,
+    phone: String,
+    country: String,
+    state: String,
+    district: String,
+    doorNumber: String,
+    area: String,
+    landmark: String,
+    pincode: String
+  }],
+
   // User preferences
   preferences: {
     newsletter: { type: Boolean, default: true },

@@ -9,43 +9,43 @@ const nodemailer = require('nodemailer');
 let transporter = null;
 
 function getTransporter() {
-    if (!transporter) {
-        const user = process.env.EMAIL_USER;
-        const pass = process.env.EMAIL_PASS;
+  if (!transporter) {
+    const user = process.env.EMAIL_USER;
+    const pass = process.env.EMAIL_PASS;
 
-        if (!user || user === 'your-email@gmail.com' || !pass || pass === 'your-app-password') {
-            console.warn('⚠️  Email service: EMAIL_USER / EMAIL_PASS not configured in .env — emails disabled.');
-            return null;
-        }
-
-        transporter = nodemailer.createTransport({
-            service: process.env.EMAIL_SERVICE || 'gmail',
-            auth: { user, pass }
-        });
+    if (!user || user === 'your-email@gmail.com' || !pass || pass === 'your-app-password') {
+      console.warn('⚠️  Email service: EMAIL_USER / EMAIL_PASS not configured in .env — emails disabled.');
+      return null;
     }
-    return transporter;
+
+    transporter = nodemailer.createTransport({
+      service: process.env.EMAIL_SERVICE || 'gmail',
+      auth: { user, pass }
+    });
+  }
+  return transporter;
 }
 
 // ─── Helper to send a mail (swallows errors so it never breaks the API) ───────
 async function sendMail(to, subject, html) {
-    const t = getTransporter();
-    if (!t) return;
-    try {
-        await t.sendMail({
-            from: `"Farmer Medicine Shop 🌿" <${process.env.EMAIL_USER}>`,
-            to,
-            subject,
-            html
-        });
-        console.log(`📧 Email sent to ${to}: ${subject}`);
-    } catch (err) {
-        console.error(`❌ Email send failed to ${to}:`, err.message);
-    }
+  const t = getTransporter();
+  if (!t) return;
+  try {
+    await t.sendMail({
+      from: `"Farmer Medicine Shop 🌿" <${process.env.EMAIL_USER}>`,
+      to,
+      subject,
+      html
+    });
+    console.log(`📧 Email sent to ${to}: ${subject}`);
+  } catch (err) {
+    console.error(`❌ Email send failed to ${to}:`, err.message);
+  }
 }
 
 // ─── Order Confirmation ────────────────────────────────────────────────────────
 async function sendOrderConfirmation(userEmail, userName, order) {
-    const itemRows = (order.items || []).map(item => `
+  const itemRows = (order.items || []).map(item => `
     <tr>
       <td style="padding:10px 8px;border-bottom:1px solid #eee;">${item.name}</td>
       <td style="padding:10px 8px;border-bottom:1px solid #eee;text-align:center;">${item.quantity}</td>
@@ -53,10 +53,10 @@ async function sendOrderConfirmation(userEmail, userName, order) {
     </tr>
   `).join('');
 
-    const addr = order.shippingAddress || {};
-    const subject = `✅ Order Confirmed — #${order._id}`;
+  const addr = order.shippingAddress || {};
+  const subject = `✅ Order Confirmed — #${order._id}`;
 
-    const html = `
+  const html = `
   <!DOCTYPE html>
   <html>
   <body style="margin:0;padding:0;background:#f4f6f9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
@@ -102,8 +102,8 @@ async function sendOrderConfirmation(userEmail, userName, order) {
           <p style="margin:0 0 6px;font-weight:600;color:#374151;font-size:13px;">📍 Delivery Address</p>
           <p style="margin:0;color:#555;font-size:13px;line-height:1.6;">
             ${addr.fullName} • ${addr.phone}<br/>
-            ${addr.area}${addr.landmark ? ', ' + addr.landmark : ''}<br/>
-            Pincode: ${addr.pincode}
+            ${addr.doorNumber}, ${addr.area}${addr.landmark ? ', ' + addr.landmark : ''}<br/>
+            ${addr.district}, ${addr.state}, ${addr.country} - ${addr.pincode}
           </p>
         </div>
 
@@ -127,23 +127,23 @@ async function sendOrderConfirmation(userEmail, userName, order) {
   </html>
   `;
 
-    await sendMail(userEmail, subject, html);
+  await sendMail(userEmail, subject, html);
 }
 
 // ─── Order Status Update ───────────────────────────────────────────────────────
 async function sendOrderStatusUpdate(userEmail, userName, order, newStatus) {
-    const statusConfig = {
-        Processing: { icon: '⚙️', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', message: 'Your order is now being processed by our team.' },
-        Shipped: { icon: '🚚', color: '#d97706', bg: '#fffbeb', border: '#fde68a', message: 'Your order is on its way! Expect delivery soon.' },
-        Delivered: { icon: '✅', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', message: 'Your order has been delivered successfully. Enjoy!' },
-        Cancelled: { icon: '❌', color: '#dc2626', bg: '#fef2f2', border: '#fecaca', message: 'Your order has been cancelled. Contact us if you have questions.' },
-        Pending: { icon: '⏳', color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb', message: 'Your order is pending.' }
-    };
+  const statusConfig = {
+    Processing: { icon: '⚙️', color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', message: 'Your order is now being processed by our team.' },
+    Shipped: { icon: '🚚', color: '#d97706', bg: '#fffbeb', border: '#fde68a', message: 'Your order is on its way! Expect delivery soon.' },
+    Delivered: { icon: '✅', color: '#16a34a', bg: '#f0fdf4', border: '#bbf7d0', message: 'Your order has been delivered successfully. Enjoy!' },
+    Cancelled: { icon: '❌', color: '#dc2626', bg: '#fef2f2', border: '#fecaca', message: 'Your order has been cancelled. Contact us if you have questions.' },
+    Pending: { icon: '⏳', color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb', message: 'Your order is pending.' }
+  };
 
-    const cfg = statusConfig[newStatus] || statusConfig.Pending;
-    const subject = `${cfg.icon} Order Status Update — #${order._id}`;
+  const cfg = statusConfig[newStatus] || statusConfig.Pending;
+  const subject = `${cfg.icon} Order Status Update — #${order._id}`;
 
-    const html = `
+  const html = `
   <!DOCTYPE html>
   <html>
   <body style="margin:0;padding:0;background:#f4f6f9;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
@@ -190,7 +190,7 @@ async function sendOrderStatusUpdate(userEmail, userName, order, newStatus) {
   </html>
   `;
 
-    await sendMail(userEmail, subject, html);
+  await sendMail(userEmail, subject, html);
 }
 
 module.exports = { sendOrderConfirmation, sendOrderStatusUpdate };

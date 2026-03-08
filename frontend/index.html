@@ -100,12 +100,6 @@
   <section class="products">
     <div class="products-header">
       <h2 id="products-heading">Featured Products</h2>
-      <select class="sort-select" id="sort-select" onchange="handleSort(this.value)">
-        <option value="">Sort: Newest</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-        <option value="name_asc">Name: A–Z</option>
-      </select>
     </div>
     <div class="product-grid" id="product-grid"></div>
   </section>
@@ -155,7 +149,7 @@
 
   <script src="js/config.js"></script>
   <script src="script.js"></script>
-  <script src="js/voiceAssistant.js"></script>
+  
 
   <script>
     // Hamburger menu
@@ -166,10 +160,7 @@
       document.getElementById('mobile-nav').classList.remove('open');
     }
 
-    // Sort handler
-    function handleSort(val) {
-      loadProducts(val);
-    }
+
 
     // Filter by category from footer
     function filterByCategory(cat) {

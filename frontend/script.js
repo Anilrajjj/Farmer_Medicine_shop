@@ -807,7 +807,7 @@ async function loginUser(email, password) {
     window.location.href = "index.html";
   } catch (err) {
     console.error(err);
-    alert("❌ " + (err.message || "Login failed."));
+    throw err;
   }
 }
 
@@ -816,8 +816,7 @@ async function signupUser(userData) {
   try {
     // Validate required fields
     if (!userData.firstName || !userData.lastName || !userData.mobileNumber || !userData.email || !userData.password) {
-      alert("⚠️ All required fields must be filled.");
-      return;
+      throw new Error("All required fields must be filled.");
     }
 
     await apiRequest('/auth/signup', {
@@ -828,7 +827,7 @@ async function signupUser(userData) {
     window.location.href = "login.html";
   } catch (err) {
     console.error("Signup error:", err);
-    alert("❌ " + (err.message || "Signup failed."));
+    throw err;
   }
 }
 
@@ -1170,16 +1169,7 @@ document.addEventListener("DOMContentLoaded", function () {
   if (userData) {
     currentUser = JSON.parse(userData);
   }
-  // Login form
-  const loginForm = document.getElementById("loginForm");
-  if (loginForm) {
-    loginForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const email = document.getElementById("loginEmail").value;
-      const password = document.getElementById("loginPassword").value;
-      loginUser(email, password);
-    });
-  }
+
 
   // Google Sign-In button
   const googleBtn = document.getElementById("googleSignInBtn");
@@ -1187,82 +1177,9 @@ document.addEventListener("DOMContentLoaded", function () {
     googleBtn.addEventListener("click", signInWithGoogle);
   }
 
-  // Signup form
-  const signupForm = document.getElementById("signupForm");
-  if (signupForm) {
-    signupForm.addEventListener("submit", function (e) {
-      e.preventDefault();
 
-      // Get basic information
-      const firstName = document.getElementById("first_name").value.trim();
-      const lastName = document.getElementById("last_name").value.trim();
-      const mobileNumber = document.getElementById("phone").value.trim();
-      const email = document.getElementById("signup_email").value.trim();
-      const password = document.getElementById("signup_password").value.trim();
-      const confirmPassword = document.getElementById("confirm_password").value.trim();
 
-      // Validate required fields
-      if (!firstName || !lastName || !mobileNumber || !email || !password) {
-        alert("⚠️ Please fill in all required fields (First Name, Last Name, Phone, Email, Password).");
-        return;
-      }
 
-      // Validate password confirmation
-      if (password !== confirmPassword) {
-        alert("❌ Passwords do not match!");
-        return;
-      }
-
-      // Validate phone number format
-      const phoneRegex = /^[6-9]\d{9}$/;
-      if (!phoneRegex.test(mobileNumber)) {
-        alert("⚠️ Please enter a valid 10-digit phone number starting with 6-9.");
-        return;
-      }
-
-      // Prepare signup data
-      const signupData = {
-        firstName,
-        lastName,
-        mobileNumber,
-        email,
-        password
-      };
-
-      // Validate password strength
-      const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
-      if (!passwordRegex.test(password)) {
-        alert("⚠️ Password must be at least 8 characters and include uppercase, lowercase, number and special character (@$!%*?&).");
-        return;
-      }
-
-      // Submit directly to backend
-      signupUser(signupData);
-    });
-  }
-
-  // Reset password form
-  const resetForm = document.getElementById("resetForm");
-  if (resetForm) {
-    resetForm.addEventListener("submit", function (e) {
-      e.preventDefault();
-      const email = document.getElementById("resetEmail").value.trim();
-      const newPassword = document.getElementById("newPassword").value.trim();
-      const confirmPassword = document.getElementById("confirmPassword").value.trim();
-
-      if (!email || !newPassword || !confirmPassword) {
-        alert("⚠️ Please fill in all fields.");
-        return;
-      }
-
-      if (newPassword !== confirmPassword) {
-        alert("❌ Passwords do not match!");
-        return;
-      }
-
-      resetPassword(email, newPassword);
-    });
-  }
 
   // ================== CHECKOUT FORM HANDLING ==================
   if (document.getElementById("checkoutForm")) {
@@ -1287,27 +1204,12 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("checkoutForm").addEventListener("submit", async (e) => {
       e.preventDefault();
 
-      const fullName = document.getElementById("fullName").value.trim();
-      const phone = document.getElementById("phone").value.trim();
-      const area = document.getElementById("area").value.trim();
-      const landmark = document.getElementById("landmark").value.trim();
-      const pincode = document.getElementById("pincode").value.trim();
+      if (!addressData || !addressData.fullName) {
+        alert("⚠️ Please complete the delivery address step first.");
+        return;
+      }
+
       const payment = document.getElementById("payment").value;
-
-      if (!fullName || !phone || !area || !pincode) {
-        alert("⚠️ Please fill in all required fields.");
-        return;
-      }
-
-      if (phone.length < 10) {
-        alert("⚠️ Please enter a valid phone number.");
-        return;
-      }
-
-      if (pincode.length !== 6 || !/^\d+$/.test(pincode)) {
-        alert("⚠️ Please enter a valid 6-digit pincode.");
-        return;
-      }
 
       // Prepare order data for API
       const items = cart.map(item => ({
@@ -1321,13 +1223,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const orderData = {
         items,
         totalAmount: Number(orderTotal.textContent),
-        shippingAddress: {
-          fullName,
-          area,
-          landmark: landmark || undefined,
-          pincode,
-          phone
-        },
+        shippingAddress: addressData,
         paymentMethod: payment === "Cash on Delivery" ? "COD" : payment
       };
 
@@ -1362,14 +1258,15 @@ document.addEventListener("DOMContentLoaded", function () {
       // Fetch order details from API
       apiRequest(`/orders/${orderId}`)
         .then(order => {
-          const addressStr = `${order.shippingAddress.area}${order.shippingAddress.landmark ? ', ' + order.shippingAddress.landmark : ''}, Pincode: ${order.shippingAddress.pincode}`;
+          const addr = order.shippingAddress;
+          const addressStr = `${addr.doorNumber}, ${addr.area}${addr.landmark ? ', ' + addr.landmark : ''}, ${addr.district}, ${addr.state}, ${addr.country} - ${addr.pincode}`;
           details.innerHTML = `
             <h3>Order Details</h3>
             <p><strong>Order ID:</strong> ${order._id.slice(-8)}</p>
             <p><strong>Status:</strong> <span class="status-${order.status.toLowerCase()}">${order.status}</span></p>
-            <p><strong>Customer:</strong> ${order.shippingAddress.fullName}</p>
+            <p><strong>Customer:</strong> ${addr.fullName}</p>
             <p><strong>Address:</strong> ${addressStr}</p>
-            <p><strong>Phone:</strong> ${order.shippingAddress.phone}</p>
+            <p><strong>Phone:</strong> ${addr.phone}</p>
             <p><strong>Payment:</strong> ${order.paymentMethod}</p>
 
             <h3>Order Items</h3>
@@ -1405,6 +1302,12 @@ document.addEventListener("DOMContentLoaded", function () {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => {
         loadProducts(currentCategory, currentSearch);
+        if (currentSearch) {
+          const productsSection = document.querySelector('.products');
+          if (productsSection) {
+            window.scrollTo({ top: productsSection.offsetTop - 80, behavior: 'smooth' });
+          }
+        }
       }, 400);
     });
 

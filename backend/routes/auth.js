@@ -2,6 +2,7 @@ const express = require("express");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const { authenticateToken } = require("../middleware/auth");
 
 const router = express.Router();
 
@@ -382,6 +383,43 @@ router.post("/google-login", async (req, res) => {
   } catch (err) {
     console.error("Google login error:", err);
     res.status(500).json({ message: "Server error during Google login" });
+  }
+});
+
+// GET PROFILE
+router.get("/profile", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id).select("-password");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// SAVE ADDRESS
+router.post("/profile/addresses", authenticateToken, async (req, res) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "User not found" });
+
+    // Add the address if it doesn't strictly match an existing one
+    user.savedAddresses = user.savedAddresses || [];
+
+    // Check if identical address already exists
+    const isDuplicate = user.savedAddresses.some(addr =>
+      addr.doorNumber === req.body.doorNumber &&
+      addr.pincode === req.body.pincode &&
+      addr.district === req.body.district
+    );
+
+    if (!isDuplicate) {
+      user.savedAddresses.push(req.body);
+      await user.save();
+    }
+
+    res.json({ message: "Address saved", addresses: user.savedAddresses });
+  } catch (err) {
+    res.status(500).json({ message: "Server error" });
   }
 });
 
