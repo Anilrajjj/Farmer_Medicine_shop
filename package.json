@@ -36,8 +36,8 @@
   },
   "homepage": "https://github.com/your-username/farmer-medicine-shop#readme",
   "engines": {
-    "node": ">=14.0.0",
-    "npm": ">=6.0.0"
+    "node": "20.x",
+    "npm": ">=10.0.0"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
