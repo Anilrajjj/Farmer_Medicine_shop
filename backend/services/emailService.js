@@ -24,6 +24,16 @@ function getTransporter() {
     const port = Number(process.env.EMAIL_PORT || 587);
     const secure = String(process.env.EMAIL_SECURE || 'false').toLowerCase() === 'true';
 
+    const forceIPv4Lookup = (hostname, options, callback) => {
+      const done = typeof options === 'function' ? options : callback;
+      dns.resolve4(hostname, (resolveErr, addresses) => {
+        if (!resolveErr && Array.isArray(addresses) && addresses.length > 0) {
+          return done(null, addresses[0], 4);
+        }
+        dns.lookup(hostname, { family: 4, all: false }, done);
+      });
+    };
+
     transporter = nodemailer.createTransport({
       host,
       port,
@@ -34,8 +44,7 @@ function getTransporter() {
       greetingTimeout: 15000,
       socketTimeout: 30000,
       family: 4,
-      lookup: (hostname, options, callback) =>
-        dns.lookup(hostname, { family: 4, all: false }, callback)
+      lookup: forceIPv4Lookup
     });
   }
   return transporter;
