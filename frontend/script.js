@@ -832,6 +832,41 @@ async function signupUser(userData) {
 }
 
 // ================== GOOGLE SIGN-IN ==================
+async function completeGoogleAuth(user) {
+  const response = await apiRequest('/auth/google-login', {
+    method: "POST",
+    body: JSON.stringify({
+      googleUID: user.uid,
+      email: user.email,
+      firstName: user.displayName ? user.displayName.split(' ')[0] : 'User',
+      lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
+      photoURL: user.photoURL
+    }),
+  });
+
+  authToken = response.token;
+  currentUser = response.user;
+  localStorage.setItem('authToken', authToken);
+  localStorage.setItem('currentUser', JSON.stringify(currentUser));
+  localStorage.setItem("isLoggedIn", "true");
+
+  updateNavbar();
+  window.location.href = "index.html";
+}
+
+async function handleGoogleRedirectResult() {
+  try {
+    if (!window.firebaseAuth || typeof firebase === 'undefined') return;
+    const result = await window.firebaseAuth.getRedirectResult();
+    if (result && result.user) {
+      await completeGoogleAuth(result.user);
+    }
+  } catch (error) {
+    console.error("Google redirect sign-in error:", error);
+    alert("Google Sign-In failed: " + (error.message || "Please try again."));
+  }
+}
+
 async function signInWithGoogle() {
   try {
     if (!window.firebaseAuth) {
@@ -843,31 +878,21 @@ async function signInWithGoogle() {
     provider.addScope('profile');
 
     const result = await window.firebaseAuth.signInWithPopup(provider);
-    const user = result.user;
-
-    // Send to backend to create/login user
-    const response = await apiRequest('/auth/google-login', {
-      method: "POST",
-      body: JSON.stringify({
-        googleUID: user.uid,
-        email: user.email,
-        firstName: user.displayName ? user.displayName.split(' ')[0] : 'User',
-        lastName: user.displayName ? user.displayName.split(' ').slice(1).join(' ') : '',
-        photoURL: user.photoURL
-      }),
-    });
-
-    authToken = response.token;
-    currentUser = response.user;
-    localStorage.setItem('authToken', authToken);
-    localStorage.setItem('currentUser', JSON.stringify(currentUser));
-    localStorage.setItem("isLoggedIn", "true");
-
-    updateNavbar();
-    window.location.href = "index.html";
+    await completeGoogleAuth(result.user);
   } catch (error) {
     console.error("Google Sign-In error:", error);
     if (error.code === 'auth/popup-closed-by-user') return;
+    if (error.code === 'auth/popup-blocked' || error.code === 'auth/cancelled-popup-request') {
+      try {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.addScope('email');
+        provider.addScope('profile');
+        await window.firebaseAuth.signInWithRedirect(provider);
+        return;
+      } catch (redirectError) {
+        console.error("Google redirect fallback error:", redirectError);
+      }
+    }
     alert("Google Sign-In failed: " + error.message);
   }
 }
@@ -1175,6 +1200,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const googleBtn = document.getElementById("googleSignInBtn");
   if (googleBtn) {
     googleBtn.addEventListener("click", signInWithGoogle);
+    handleGoogleRedirectResult();
   }
 
 

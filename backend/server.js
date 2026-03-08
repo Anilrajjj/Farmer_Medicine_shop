@@ -42,8 +42,13 @@ app.use("/api/payment", paymentRoutes);
 
 // Config endpoint for frontend
 app.get("/api/config", (req, res) => {
+  const configuredApiBase = process.env.API_BASE_URL || "/api";
+  const isProd = (process.env.NODE_ENV || "").toLowerCase() === "production";
+  const isLocalApi = /localhost|127\.0\.0\.1/.test(configuredApiBase);
+  const safeApiBase = isProd && isLocalApi ? "/api" : configuredApiBase;
+
   res.json({
-    API_BASE_URL: process.env.API_BASE_URL || "/api",
+    API_BASE_URL: safeApiBase,
     FIREBASE_API_KEY: process.env.FIREBASE_API_KEY,
     FIREBASE_AUTH_DOMAIN: process.env.FIREBASE_AUTH_DOMAIN,
     FIREBASE_PROJECT_ID: process.env.FIREBASE_PROJECT_ID,
