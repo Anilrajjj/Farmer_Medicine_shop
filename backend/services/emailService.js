@@ -4,9 +4,11 @@
  * Set EMAIL_USER and EMAIL_PASS in .env to enable.
  */
 const nodemailer = require('nodemailer');
+const dns = require('dns');
 
 // Create transporter — gracefully disabled if credentials not set
 let transporter = null;
+const appBaseUrl = (process.env.FRONTEND_URL || process.env.APP_BASE_URL || 'http://localhost:5001').replace(/\/+$/, '');
 
 function getTransporter() {
   if (!transporter) {
@@ -18,9 +20,22 @@ function getTransporter() {
       return null;
     }
 
+    const host = process.env.EMAIL_HOST || 'smtp.gmail.com';
+    const port = Number(process.env.EMAIL_PORT || 587);
+    const secure = String(process.env.EMAIL_SECURE || 'false').toLowerCase() === 'true';
+
     transporter = nodemailer.createTransport({
-      service: process.env.EMAIL_SERVICE || 'gmail',
-      auth: { user, pass }
+      host,
+      port,
+      secure,
+      requireTLS: !secure,
+      auth: { user, pass },
+      connectionTimeout: 20000,
+      greetingTimeout: 15000,
+      socketTimeout: 30000,
+      family: 4,
+      lookup: (hostname, options, callback) =>
+        dns.lookup(hostname, { family: 4, all: false }, callback)
     });
   }
   return transporter;
@@ -115,7 +130,7 @@ async function sendOrderConfirmation(userEmail, userName, order) {
         </div>
 
         <p style="color:#555;font-size:13px;margin-top:20px;">We'll send you another email once your order is shipped. You can track your orders in the app.</p>
-        <a href="http://localhost:5001/order-history.html" style="display:inline-block;margin-top:16px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">View My Orders →</a>
+        <a href="${appBaseUrl}/order-history.html" style="display:inline-block;margin-top:16px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">View My Orders →</a>
       </div>
 
       <!-- Footer -->
@@ -178,7 +193,7 @@ async function sendOrderStatusUpdate(userEmail, userName, order, newStatus) {
           <span style="font-size:13px;color:#374151;"><strong>💰 Order Total:</strong> ₹${(order.totalAmount || 0).toLocaleString('en-IN')}</span>
         </div>
 
-        <a href="http://localhost:5001/order-history.html" style="display:inline-block;margin-top:16px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">View Order Details →</a>
+        <a href="${appBaseUrl}/order-history.html" style="display:inline-block;margin-top:16px;background:linear-gradient(135deg,#2e7d32,#1b5e20);color:#fff;text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:600;font-size:14px;">View Order Details →</a>
       </div>
 
       <!-- Footer -->

@@ -7,6 +7,13 @@ const { sendOrderConfirmation, sendOrderStatusUpdate } = require("../services/em
 
 const router = express.Router();
 
+function resolveEmailName(user, shippingAddress) {
+  const shippingName = (shippingAddress && shippingAddress.fullName ? String(shippingAddress.fullName) : "").trim();
+  if (shippingName) return shippingName;
+  const profileName = `${user?.firstName || ""} ${user?.lastName || ""}`.trim();
+  return profileName || "Valued Customer";
+}
+
 // PLACE ORDER (logged-in users only)
 router.post("/place", authenticateToken, async (req, res) => {
   try {
@@ -32,7 +39,7 @@ router.post("/place", authenticateToken, async (req, res) => {
     try {
       const user = await User.findById(req.user._id).select("email firstName lastName");
       if (user && user.email) {
-        const userName = `${user.firstName} ${user.lastName}`.trim() || "Valued Customer";
+        const userName = resolveEmailName(user, shippingAddress);
         sendOrderConfirmation(user.email, userName, newOrder).catch(() => { });
       }
     } catch (emailErr) {
@@ -136,7 +143,7 @@ router.patch("/:id/status", authenticateToken, requireAdmin, async (req, res) =>
     // Send status update email (non-blocking)
     try {
       if (order.user && order.user.email) {
-        const userName = `${order.user.firstName} ${order.user.lastName}`.trim() || "Valued Customer";
+        const userName = resolveEmailName(order.user, order.shippingAddress);
         sendOrderStatusUpdate(order.user.email, userName, order, status).catch(() => { });
       }
     } catch (emailErr) {
@@ -176,7 +183,7 @@ router.patch("/:id/cancel", authenticateToken, async (req, res) => {
     try {
       const user = await User.findById(req.user._id).select("email firstName lastName");
       if (user && user.email) {
-        const userName = `${user.firstName} ${user.lastName}`.trim() || "Valued Customer";
+        const userName = resolveEmailName(user, order.shippingAddress);
         sendOrderStatusUpdate(user.email, userName, order, "Cancelled").catch(() => { });
       }
     } catch (emailErr) {
