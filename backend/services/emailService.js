@@ -5,6 +5,7 @@
  */
 const nodemailer = require('nodemailer');
 const dns = require('dns');
+const axios = require('axios');
 
 // Create transporter — gracefully disabled if credentials not set
 let transporter = null;
@@ -52,18 +53,47 @@ function getTransporter() {
 
 // ─── Helper to send a mail (swallows errors so it never breaks the API) ───────
 async function sendMail(to, subject, html) {
+  const resendApiKey = process.env.RESEND_API_KEY;
+  const fromAddress = process.env.EMAIL_FROM || `"Farmer Medicine Shop" <${process.env.EMAIL_USER}>`;
+
+  if (resendApiKey) {
+    try {
+      await axios.post(
+        "https://api.resend.com/emails",
+        {
+          from: fromAddress,
+          to: [to],
+          subject,
+          html
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json"
+          },
+          timeout: 20000
+        }
+      );
+      console.log(`📧 Email sent via Resend to ${to}: ${subject}`);
+      return;
+    } catch (err) {
+      const resendMsg = err?.response?.data?.message || err.message;
+      console.error(`❌ Resend send failed to ${to}:`, resendMsg);
+    }
+  }
+
   const t = getTransporter();
   if (!t) return;
   try {
     await t.sendMail({
-      from: `"Farmer Medicine Shop 🌿" <${process.env.EMAIL_USER}>`,
+      from: fromAddress,
       to,
       subject,
       html
     });
-    console.log(`📧 Email sent to ${to}: ${subject}`);
+    console.log(`📧 Email sent via SMTP to ${to}: ${subject}`);
   } catch (err) {
-    console.error(`❌ Email send failed to ${to}:`, err.message);
+    console.error(`❌ SMTP send failed to ${to}:`, err.message);
   }
 }
 

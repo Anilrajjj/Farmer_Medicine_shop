@@ -1,7 +1,14 @@
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const dns = require("dns");
 require("dotenv").config({ path: path.join(__dirname, "../.env") });
+
+try {
+  dns.setDefaultResultOrder("ipv4first");
+} catch (err) {
+  console.warn("DNS result order config not applied:", err.message);
+}
 
 // Import database connection
 const connectDB = require("./config/db");
