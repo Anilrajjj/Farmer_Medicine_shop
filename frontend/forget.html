@@ -130,7 +130,7 @@
       resetBtn.textContent = 'Resetting…';
 
       try {
-        const BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || 'http://localhost:5001/api';
+        const BASE = (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || '/api';
         const res = await fetch(`${BASE}/auth/reset`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },

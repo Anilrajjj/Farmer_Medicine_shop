@@ -1,5 +1,5 @@
 // ================== CONFIGURATION ==================
-let API_BASE_URL = 'http://localhost:5001/api';
+let API_BASE_URL = '/api';
 
 // Load config if available
 if (typeof config !== 'undefined' && config.API_BASE_URL) {
@@ -777,9 +777,9 @@ const fallbackProducts = [
 // Fallback API endpoints if config.js doesn't load
 const API_ENDPOINTS = window.API_ENDPOINTS || {
   auth: {
-    login: 'http://localhost:5001/api/auth/login',
-    signup: 'http://localhost:5001/api/auth/signup',
-    reset: 'http://localhost:5001/api/auth/reset'
+    login: '/api/auth/login',
+    signup: '/api/auth/signup',
+    reset: '/api/auth/reset'
   }
 };
 

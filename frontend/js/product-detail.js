@@ -158,7 +158,7 @@
 
         try {
             // Try fetching from backend API
-            const baseUrl = window.API_BASE_URL || 'http://localhost:5001/api';
+            const baseUrl = window.API_BASE_URL || '/api';
             const response = await fetch(`${baseUrl}/products/${productId}`);
             if (!response.ok) throw new Error('Product not found');
             const product = await response.json();

@@ -3,7 +3,7 @@
   try {
     const res = await fetch('/api/config');
     const configData = await res.json();
-    const API_BASE_URL = configData.API_BASE_URL || 'http://localhost:5001/api';
+    const API_BASE_URL = configData.API_BASE_URL || '/api';
 
     // Only set globals if they are not already defined
     if (!window.API_ENDPOINTS) {
@@ -26,11 +26,15 @@
     if (!window.API_BASE_URL) {
       window.API_BASE_URL = API_BASE_URL;
     }
+    if (!window.APP_CONFIG) {
+      window.APP_CONFIG = { API_BASE_URL };
+    }
 
     window.dispatchEvent(new Event('configReady'));
   } catch (error) {
     console.error("Could not load API_BASE_URL from backend config, falling back to static config.");
-    const API_BASE_URL = 'http://localhost:5001/api';
+    const API_BASE_URL = '/api';
     if (!window.API_BASE_URL) window.API_BASE_URL = API_BASE_URL;
+    if (!window.APP_CONFIG) window.APP_CONFIG = { API_BASE_URL };
   }
 })();
