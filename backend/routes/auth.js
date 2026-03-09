@@ -340,20 +340,57 @@ router.post("/google-login", async (req, res) => {
       return res.status(400).json({ message: "Google UID and email are required" });
     }
 
+    const normalizedFirstName = String(firstName || "").trim();
+    const normalizedLastName = String(lastName || "").trim();
+
+    // Build safe non-empty names for schema-required fields.
+    let safeFirstName = normalizedFirstName;
+    let safeLastName = normalizedLastName;
+
+    if (!safeFirstName) {
+      const emailLocalPart = String(email).split("@")[0] || "";
+      safeFirstName = emailLocalPart || "User";
+    }
+
+    if (!safeLastName) {
+      const firstNameParts = safeFirstName.split(/\s+/).filter(Boolean);
+      if (firstNameParts.length > 1) {
+        safeFirstName = firstNameParts.shift();
+        safeLastName = firstNameParts.join(" ");
+      } else {
+        safeLastName = "User";
+      }
+    }
+
     // Check if user already exists
     let user = await User.findOne({ $or: [{ email }, { googleUID }] });
 
     if (user) {
+      // Keep required name fields valid for older/incomplete records.
+      let shouldSave = false;
+      if (!user.firstName || !String(user.firstName).trim()) {
+        user.firstName = safeFirstName;
+        shouldSave = true;
+      }
+      if (!user.lastName || !String(user.lastName).trim()) {
+        user.lastName = safeLastName;
+        shouldSave = true;
+      }
+
       // Update googleUID if not set
       if (!user.googleUID) {
         user.googleUID = googleUID;
+        shouldSave = true;
+      }
+
+      if (shouldSave) {
         await user.save();
       }
     } else {
       // Create new user from Google account (no password needed)
       user = new User({
-        firstName: firstName || 'User',
-        lastName: lastName || '',
+        firstName: safeFirstName,
+        lastName: safeLastName,
         email,
         mobileNumber: '',
         password: await require('bcryptjs').hash(googleUID + Date.now(), 10), // random password
