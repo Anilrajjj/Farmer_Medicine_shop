@@ -11,6 +11,16 @@ const axios = require('axios');
 let transporter = null;
 const appBaseUrl = (process.env.FRONTEND_URL || process.env.APP_BASE_URL || 'http://localhost:5001').replace(/\/+$/, '');
 
+function parseEmailAddress(input) {
+  const value = String(input || '').trim();
+  const match = value.match(/<([^>]+)>/);
+  return (match ? match[1] : value).replace(/^['"]+|['"]+$/g, '').trim().toLowerCase();
+}
+
+function isResendTestMode(fromAddress) {
+  return parseEmailAddress(fromAddress).endsWith('@resend.dev');
+}
+
 function getTransporter() {
   if (!transporter) {
     const user = process.env.EMAIL_USER;
@@ -44,8 +54,14 @@ function getTransporter() {
       connectionTimeout: 20000,
       greetingTimeout: 15000,
       socketTimeout: 30000,
+      dnsTimeout: 15000,
       family: 4,
-      lookup: forceIPv4Lookup
+      lookup: forceIPv4Lookup,
+      tls: {
+        family: 4,
+        servername: host,
+        minVersion: 'TLSv1.2'
+      }
     });
   }
   return transporter;
@@ -58,8 +74,12 @@ async function sendMail(to, subject, html) {
   const fromAddress = String(rawFrom)
     .trim()
     .replace(/^['"]+|['"]+$/g, "") || "onboarding@resend.dev";
+  const smtpUser = parseEmailAddress(process.env.EMAIL_USER);
+  const recipient = parseEmailAddress(to);
+  const resendInTestMode = isResendTestMode(fromAddress);
+  const canUseResendForRecipient = !resendInTestMode || (smtpUser && recipient === smtpUser);
 
-  if (resendApiKey) {
+  if (resendApiKey && canUseResendForRecipient) {
     try {
       await axios.post(
         "https://api.resend.com/emails",
@@ -83,6 +103,10 @@ async function sendMail(to, subject, html) {
       const resendMsg = err?.response?.data?.message || err.message;
       console.error(`❌ Resend send failed to ${to}:`, resendMsg);
     }
+  } else if (resendApiKey && resendInTestMode) {
+    console.warn(
+      `⚠️  Resend skipped for ${to}: EMAIL_FROM uses resend.dev test mode. Verify a domain in Resend and switch EMAIL_FROM to that domain to email external recipients.`
+    );
   }
 
   const t = getTransporter();
