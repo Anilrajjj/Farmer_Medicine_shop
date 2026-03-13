@@ -62,48 +62,17 @@ function getTransporter() {
 
 // ─── Helper to send a mail (swallows errors so it never breaks the API) ───────
 async function sendMail(to, subject, html) {
-  const resendApiKey = process.env.RESEND_API_KEY;
+  const t = getTransporter();
+  if (!t) {
+    console.warn(`⚠️  Cannot send email to ${to}: Transporter not initialized.`);
+    return;
+  }
+
   const rawFrom = process.env.EMAIL_FROM || `"Farmer Medicine Shop" <${process.env.EMAIL_USER}>`;
   const fromAddress = String(rawFrom)
     .trim()
-    .replace(/^['"]+|['"]+$/g, "") || "onboarding@resend.dev";
-  const smtpUser = parseEmailAddress(process.env.EMAIL_USER);
-  const recipient = parseEmailAddress(to);
-  const resendInTestMode = isResendTestMode(fromAddress);
-  const canUseResendForRecipient = !resendInTestMode || (smtpUser && recipient === smtpUser);
+    .replace(/^['"]+|['"]+$/g, "");
 
-  if (resendApiKey && canUseResendForRecipient) {
-    try {
-      await axios.post(
-        "https://api.resend.com/emails",
-        {
-          from: fromAddress,
-          to: [to],
-          subject,
-          html
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${resendApiKey}`,
-            "Content-Type": "application/json"
-          },
-          timeout: 20000
-        }
-      );
-      console.log(`📧 Email sent via Resend to ${to}: ${subject}`);
-      return;
-    } catch (err) {
-      const resendMsg = err?.response?.data?.message || err.message;
-      console.error(`❌ Resend send failed to ${to}:`, resendMsg);
-    }
-  } else if (resendApiKey && resendInTestMode) {
-    console.warn(
-      `⚠️  Resend skipped for ${to}: EMAIL_FROM uses resend.dev test mode. Verify a domain in Resend and switch EMAIL_FROM to that domain to email external recipients.`
-    );
-  }
-
-  const t = getTransporter();
-  if (!t) return;
   try {
     await t.sendMail({
       from: fromAddress,
