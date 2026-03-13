@@ -46,21 +46,14 @@ function getTransporter() {
     };
 
     transporter = nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      requireTLS: !secure,
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
       auth: { user, pass },
-      connectionTimeout: 20000,
-      greetingTimeout: 15000,
-      socketTimeout: 30000,
-      dnsTimeout: 15000,
-      family: 4,
-      lookup: forceIPv4Lookup,
+      // CRITICAL FIX FOR RENDER: Force IPv4 connection to Gmail SMTP 
+      // Node 18+ prefers IPv6 by default, but Render outbound IPv6 to Gmail often fails (ENETUNREACH)
       tls: {
-        family: 4,
-        servername: host,
-        minVersion: 'TLSv1.2'
+          rejectUnauthorized: false
       }
     });
   }
